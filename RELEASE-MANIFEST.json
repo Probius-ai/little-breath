@@ -1,255 +1,337 @@
 {
-  "project": "Little Breath",
-  "version": "1.0.0",
+  "release": "optional-github-supabase-sync-v3",
+  "verification": {
+    "unit_integration": "125 passed",
+    "frontend_server_types": "passed",
+    "build": "passed",
+    "format": "passed",
+    "production_audit": "0 vulnerabilities",
+    "database_rls_cas": "passed with rollback-only fixtures; zero rows left",
+    "database_advisors": "security and performance: zero findings",
+    "browser_suite": "Prior v2 exact head 5db66562efbed18afc23f363ecb049828837d687 passed 26; v3 has 27 tests and requires fresh CI",
+    "actual_oauth": "provider enabled and exact redirects verified; post-deploy test pending",
+    "runtime_licenses": "All nine production dependency notices bundled in public/third-party-licenses.txt and verified in dist",
+    "review": "Independent re-review confirmed oversized-conflict rollback and quota-safe logout; 25 targeted tests passed"
+  },
   "files": [
     {
       "path": ".env.example",
-      "size": 376,
+      "bytes": 376,
       "sha256": "8c9043821ca334b5f7980899e303e5c018c98b901182d30f1227fb1b2e17eb8d"
     },
     {
       "path": ".github/workflows/ci.yml",
-      "size": 657,
+      "bytes": 657,
       "sha256": "0383627c90295715ba5e90b3a6aac47a7bbd463f9898e378449c30cbbcf30bdb"
     },
     {
       "path": ".github/workflows/pages.yml",
-      "size": 794,
+      "bytes": 794,
       "sha256": "555fec21cf3069383c9ecb0c20c95d45ebe73fcfcfabf34b03525c786d78ed95"
     },
     {
       "path": ".gitignore",
-      "size": 492,
+      "bytes": 492,
       "sha256": "7d08b1ed70f75eb9a800cc59df1c0fc5e2a11b2be5c62ef04219d246e74730a9"
     },
     {
       "path": "CONTRIBUTING.md",
-      "size": 783,
+      "bytes": 783,
       "sha256": "bd9612a9c4a125bf9b04e6cfa140db40fea818118cff269f3cb2e886e4a9052f"
     },
     {
       "path": "LICENSE",
-      "size": 1226,
+      "bytes": 1226,
       "sha256": "32a4852f4403a4077834d445210943f2b96f730f6b0d7b7b6fc975cc020c8dbc"
     },
     {
       "path": "README.md",
-      "size": 7212,
-      "sha256": "2e82556f9f31996e1b4baa8d675928eff580adc664a49cdb2957c5094408e14a"
+      "bytes": 8411,
+      "sha256": "2681496aacc44891c4f834134306361669eb2febc8eb1537b5c54b80fe6e7bde"
     },
     {
       "path": "SECURITY.md",
-      "size": 1257,
-      "sha256": "1e8cb2d5af5d069d440f41bbb4a2a377a5a4f08b14e24058112d67f181050840"
+      "bytes": 2356,
+      "sha256": "18bd14146fcf950cf00dff2afb6fcb51ed3a185095e8ff9980114e98ddb8dd67"
     },
     {
       "path": "docs/THIRD_PARTY_NOTICES.md",
-      "size": 5363,
-      "sha256": "badc9fd62ec369fee0e2981d3ab9d1fbc21eb25e52a69cc3359eb65492e31744"
+      "bytes": 5834,
+      "sha256": "8f806eedb8ef66880306d8e920995a602e928101e7826ae0cec4dfbb3179c3f7"
     },
     {
       "path": "docs/architecture.md",
-      "size": 5352,
-      "sha256": "6e6eaee458703016655563715dbb2d0f9af1e3cff771b27416cc065ecb2ee30d"
+      "bytes": 5992,
+      "sha256": "9637bb9cd736b163281de3f69589cf7ca8b1c97ef7927d603f599e7cc56214f3"
+    },
+    {
+      "path": "docs/cloud-database-tests.sql",
+      "bytes": 11969,
+      "sha256": "c36f12ab4da1e9e8543a146da8b71b47b161d15fe111f499e9de635644d40826"
+    },
+    {
+      "path": "docs/cloud-schema.sql",
+      "bytes": 7081,
+      "sha256": "5912d1e3df57c4353f6405b31b1a2e049ede3bc5a5dcada8ba2a2f140c9bec15"
+    },
+    {
+      "path": "docs/cloud-sync.md",
+      "bytes": 6925,
+      "sha256": "148702040d9c16b53af0a66e95f21ec941b40f82c34114f5d1de4a6859b77e66"
     },
     {
       "path": "docs/release-review.md",
-      "size": 11194,
+      "bytes": 11194,
       "sha256": "02b416fa92688efecf6efa1e5a356f6378f98582111dced03295035c7fe222d5"
     },
     {
       "path": "docs/weather.md",
-      "size": 6335,
+      "bytes": 6335,
       "sha256": "77b99c0bbcd84ad91995e8ed4333e821ecde01b45702c3c37aea29672188ee94"
     },
     {
       "path": "index.html",
-      "size": 798,
+      "bytes": 798,
       "sha256": "351176ad28d5f738a2433079922da13a89dd25d3f412c16f65977e9aa7052376"
     },
     {
       "path": "package-lock.json",
-      "size": 38635,
-      "sha256": "b7ea91d8bece87b998f439c830e8346ebce8f1f9815e8c8b92db8dd07caa9474"
+      "bytes": 42643,
+      "sha256": "43a399281a48fe32becf9c2f60e780b98778e425468b60c72eeb0297a962739d"
     },
     {
       "path": "package.json",
-      "size": 1112,
-      "sha256": "1bffab92863c212e38fc1a72c5253f76fa1a02b9f011bcd0c120806a1df9ce66"
+      "bytes": 1176,
+      "sha256": "b0af15914def1d44b5490a0fec4eb614535eb945914165e2e65e44f0a8cc6dab"
     },
     {
       "path": "playwright.config.ts",
-      "size": 732,
+      "bytes": 732,
       "sha256": "9bf0a8c8d44882a2bc02854e4b90110fa749c1a82c16c13a7f7933ad0ba31281"
     },
     {
       "path": "public/favicon.svg",
-      "size": 470,
+      "bytes": 470,
       "sha256": "e629a6fe025099e7d9346caa9086ece89ba562601ff8072e63367192d156d153"
     },
     {
       "path": "public/openweather.png",
-      "size": 21884,
+      "bytes": 21884,
       "sha256": "78530eceb7385370ba7997ae66c08125e2d0cad102d172b2c5ae5e68c19e9a2b"
     },
     {
+      "path": "public/third-party-licenses.txt",
+      "bytes": 11151,
+      "sha256": "d7c257fadcc73266fb09971e0f8861963d250480c89ea8e9db76bd2d88e3e44d"
+    },
+    {
       "path": "server/app.ts",
-      "size": 7757,
+      "bytes": 7757,
       "sha256": "53827ac7023a142a9a272c8ce9a788b58c191020bda0de3b5f75ef1e8a2b8d2e"
     },
     {
       "path": "server/index.ts",
-      "size": 1000,
+      "bytes": 1000,
       "sha256": "ba491ad5409ba113ce20595d9d7cec20656109e07d94b3448e4dc1cb20479f45"
     },
     {
       "path": "server/weather-service.ts",
-      "size": 8860,
+      "bytes": 8860,
       "sha256": "e7babca591b4514709bab376ca00c65671b37e6503b2e11f31f1b85668ad4f10"
     },
     {
       "path": "src/care-placement.ts",
-      "size": 3482,
+      "bytes": 3482,
       "sha256": "71698cb4d1e66d650d1be172a5bb33a4cae3e5f7df576d6405cacc79c4abb684"
     },
     {
       "path": "src/care-tray.ts",
-      "size": 16101,
+      "bytes": 16101,
       "sha256": "2d28abad640a6c3dece2b58062f806d644357d4359e41926e6aef14b033db51e"
     },
     {
+      "path": "src/cloud/client.ts",
+      "bytes": 6833,
+      "sha256": "1034df50d1a1861c4304beaf7226312f19282be3c87659ba19424a0a870c8a5d"
+    },
+    {
+      "path": "src/cloud/config.ts",
+      "bytes": 387,
+      "sha256": "3c18d4281c1c13459f04c3e558afef775d54bc13e9e14794c7d61dca3abd590d"
+    },
+    {
+      "path": "src/cloud/lease.ts",
+      "bytes": 1116,
+      "sha256": "51f2bcbae1ad121e5bba8270486683f51bae949c25bd7cb256c22342dbb7e6d0"
+    },
+    {
+      "path": "src/cloud/style.css",
+      "bytes": 2107,
+      "sha256": "812f80eff9ef8facae8dbbadaf803b8d974a244773470d6dd5a01df4b92f7124"
+    },
+    {
+      "path": "src/cloud/sync.ts",
+      "bytes": 17250,
+      "sha256": "4f1c9def2bd3a5004bf7adc8ce7b3900f32145bddcc3ecfc377403f1dfe1ffcd"
+    },
+    {
+      "path": "src/cloud/ui.ts",
+      "bytes": 10375,
+      "sha256": "f6ac39c73af21fc43519787827fc9127117432d4aee1b2b60880557655342bec"
+    },
+    {
       "path": "src/engine/behavior.ts",
-      "size": 7972,
+      "bytes": 7972,
       "sha256": "d30a44a63d385cbce49303836e21195578897a225b4e2f3032c5c3add6744d8e"
     },
     {
       "path": "src/engine/ik.ts",
-      "size": 3717,
+      "bytes": 3717,
       "sha256": "a8685d7659b9132970a93ee1ac6bde1c4bbe18d1cb3d07542feee19bfdec5467"
     },
     {
       "path": "src/engine/index.ts",
-      "size": 525,
+      "bytes": 525,
       "sha256": "37fe931ffa23e4d9988558a0bab1edb193638a43338ec9d47ad63a150c9cf41e"
     },
     {
       "path": "src/engine/math.ts",
-      "size": 1733,
+      "bytes": 1733,
       "sha256": "f8d2ca383ec4e54c28e2843c2d80d22c9604d6d84895983d35fd97fe40c8690f"
     },
     {
       "path": "src/engine/pose.ts",
-      "size": 6519,
+      "bytes": 6519,
       "sha256": "700544533347134f680f4b41a112342c8e4605bb7c3743d6ce7dd94953fa09ca"
     },
     {
       "path": "src/engine/render.ts",
-      "size": 3432,
+      "bytes": 3432,
       "sha256": "d62a081db4d9d753de64940ab4df7245d4251fd1987286d1ca5f9eb5bf8db95f"
     },
     {
       "path": "src/engine/skinning.ts",
-      "size": 5138,
+      "bytes": 5138,
       "sha256": "6931f5c023fc94f3db31f5b3bdad1cb0f2733506b97ecdd302f0fac567a37f3c"
     },
     {
       "path": "src/engine/types.ts",
-      "size": 3011,
+      "bytes": 3011,
       "sha256": "86d8fdbcde656c2608b4f9dff40a1ddffa291fb667872fd3d951faf301d2bd30"
     },
     {
       "path": "src/growth.ts",
-      "size": 3589,
+      "bytes": 3589,
       "sha256": "9f7c38d52a9118dc4affc7d1aeaf7b5d303b5f44df8373aec2e5f2be286c77f4"
     },
     {
       "path": "src/icons.ts",
-      "size": 3274,
+      "bytes": 3274,
       "sha256": "1df852b0f0774e02bf71034aa788909eb583bf06a7b3559f5ead3888bfcba1f1"
     },
     {
       "path": "src/main.ts",
-      "size": 66967,
-      "sha256": "b82ff975829caa1f799fa296c8c180cdfb7f8a94569bc07186882562cd76768e"
+      "bytes": 73458,
+      "sha256": "082292476e8cd8d269fecfacada98dfcc64140d9468f9523a2e49bf8adeee8f6"
     },
     {
       "path": "src/project.ts",
-      "size": 14572,
+      "bytes": 14572,
       "sha256": "3572f92a6809d112b26bd62d97659a2532fdbb3a792780feb563fd3f5a7f398b"
     },
     {
       "path": "src/scene.ts",
-      "size": 10506,
+      "bytes": 10506,
       "sha256": "ad9ce379a4fb88508be42744c39a010cffd6152ed22ed02517ef5647e3597aad"
     },
     {
       "path": "src/style.css",
-      "size": 52186,
+      "bytes": 52186,
       "sha256": "ab97093eaec77c0265e84557e331c04c680e50ea38357d52f82375ccbd691a2b"
     },
     {
       "path": "src/tracing.ts",
-      "size": 2548,
+      "bytes": 2548,
       "sha256": "090a1c1d3392b4e67be16edbdd491c1002f450d5f7d65ab3d888513d7cc81fed"
     },
     {
       "path": "src/weather.ts",
-      "size": 9625,
+      "bytes": 9625,
       "sha256": "97c9e1057215e4adb1b7e9a1e07ec94ee5b04c56f0399498ed1921ec17fa9807"
     },
     {
       "path": "src/world.ts",
-      "size": 853,
+      "bytes": 853,
       "sha256": "5eb29dc60e1a98dda7de7360b9b3ef8f60aff994632950d088acd95ba507eaaa"
     },
     {
       "path": "tests/browser/care-tray.spec.ts",
-      "size": 19145,
+      "bytes": 19145,
       "sha256": "ed6a2594748848f587263fec2fc9f38f1c80928da282706134ee965706ef8792"
     },
     {
+      "path": "tests/browser/cloud-sync.spec.ts",
+      "bytes": 12824,
+      "sha256": "a749953e9d200290acff840d480253c5c9813dce6dfba55c4d651ab3a219dcfa"
+    },
+    {
       "path": "tests/browser/studio.spec.ts",
-      "size": 7540,
+      "bytes": 7540,
       "sha256": "e31f203cb8543fe7cfacf433a004662087fee8ee51f7a305f24e56d7b087efb7"
     },
     {
       "path": "tests/care-placement.test.ts",
-      "size": 10544,
+      "bytes": 10544,
       "sha256": "349dd6466db68b94efc048cb2619949571db3ef5924103ac7e0ecf5582ed96eb"
     },
     {
+      "path": "tests/cloud-lease.test.ts",
+      "bytes": 1839,
+      "sha256": "322300ef56a24785de01183d00ac2a7793150641cc33d8a8c2c185dac2b29d2b"
+    },
+    {
+      "path": "tests/cloud-sync.test.ts",
+      "bytes": 17674,
+      "sha256": "07bf61c48b3da5598ddee40f7dcdbe6af2465ec36f7aa236f0c13ad120912f89"
+    },
+    {
+      "path": "tests/cloud-ui.test.ts",
+      "bytes": 1986,
+      "sha256": "c65a386114676556cdb76681602a5d3c1460a1af625767751280fe630e227b61"
+    },
+    {
       "path": "tests/engine.test.ts",
-      "size": 16094,
+      "bytes": 16094,
       "sha256": "0919d8a20194b2888587fbaeb9adbc1c1afe67e2784026951098fd402a1510de"
     },
     {
       "path": "tests/growth.test.ts",
-      "size": 5815,
+      "bytes": 5815,
       "sha256": "5dad5ee9fa2ddcd4906137e4afa8b59edfd862d08695f64247f38f1f992e766c"
     },
     {
       "path": "tests/user-regressions.test.ts",
-      "size": 29890,
+      "bytes": 29890,
       "sha256": "0d1bfb11bcacf499ab3de57897a95e4ad560103630e97733a781adc18ade4ff4"
     },
     {
       "path": "tests/weather.test.ts",
-      "size": 13598,
+      "bytes": 13598,
       "sha256": "b9b205629d14e9b3673e77d4eb009cc000000c0830809df942b023f2fdce8bb3"
     },
     {
       "path": "tsconfig.json",
-      "size": 324,
+      "bytes": 324,
       "sha256": "1f12ea1817515d1244e022744987d4a0910d2b19fac166d1f56c4232a40b6ff5"
     },
     {
       "path": "tsconfig.server.json",
-      "size": 156,
+      "bytes": 156,
       "sha256": "3de470204469b6e4020365d3ff3b458b4db96ee6c32d0c112726794b9cd67254"
     },
     {
       "path": "vite.config.ts",
-      "size": 213,
+      "bytes": 213,
       "sha256": "da62577456ccd6508e24170e586ca2cc0ad3aae05b6ada80606dc57ed286eb74"
     }
   ]

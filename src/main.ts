@@ -1,4 +1,10 @@
 import "./style.css";
+import "./cloud/style.css";
+import { CloudClient } from "./cloud/client";
+import { ProjectSync, sameProject } from "./cloud/sync";
+import { CloudAccountUI } from "./cloud/ui";
+import { AccountWorkspaceLease } from "./cloud/lease";
+import type { Account } from "./cloud/sync";
 import {
   createPetState,
   updatePet,
@@ -65,6 +71,26 @@ try {
   storageWarning =
     "저장된 프로젝트를 읽지 못했어요. 파일 가져오기로 복원할 수 있어요.";
 }
+const initialGuest = clone(project);
+const emergencyCopies = new Map<string, Project>();
+const emergencyKey = (owner: string) => `little-breath.emergency.v1.${owner}`;
+function activeOwner() {
+  return cloudSync?.state.accountWorkspace
+    ? cloudSync.state.account!.id
+    : "guest";
+}
+function emergencyCopy(owner: string): Project | null {
+  if (emergencyCopies.has(owner)) return clone(emergencyCopies.get(owner)!);
+  try {
+    const raw = sessionStorage.getItem(emergencyKey(owner));
+    return raw ? parseProject(raw) : null;
+  } catch {
+    return null;
+  }
+}
+let accountOwnershipValid = false;
+let cloudSync: ProjectSync | undefined;
+let cloudUI: CloudAccountUI | undefined;
 let tracing: TracingReference | null = null,
   photoEpoch = 0;
 function clearTracing() {
@@ -142,13 +168,44 @@ function toast(message: string) {
   t.classList.add("visible");
   setTimeout(() => t.classList.remove("visible"), 4200);
 }
+function saveLocalNow() {
+  clearTimeout(saveTimer);
+  project.updatedAt = new Date().toISOString();
+  const owner = activeOwner();
+  try {
+    if (cloudSync?.state.accountWorkspace && !accountOwnershipValid)
+      throw new Error("계정 탭 잠금을 다시 확인하고 있어요.");
+    if (cloudSync) cloudSync.write(project);
+    else saveProject(project);
+    const recovery = emergencyCopy(owner);
+    if (!recovery || sameProject(recovery, project)) {
+      emergencyCopies.delete(owner);
+      try {
+        sessionStorage.removeItem(emergencyKey(owner));
+      } catch {
+        /* optional recovery store */
+      }
+    }
+  } catch (error) {
+    emergencyCopies.set(owner, clone(project));
+    try {
+      sessionStorage.setItem(emergencyKey(owner), JSON.stringify(project));
+    } catch {
+      /* memory remains exportable */
+    }
+    throw error;
+  }
+  const el = document.querySelector("#save-status");
+  if (el)
+    el.textContent = cloudSync?.state.accountWorkspace
+      ? cloudSync.state.message
+      : "이 브라우저에 저장됨";
+}
 function persist() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     try {
-      saveProject(project);
-      const el = document.querySelector("#save-status");
-      if (el) el.textContent = "이 브라우저에 저장됨";
+      saveLocalNow();
     } catch {
       toast("브라우저 저장 공간이 부족해요. 프로젝트를 파일로 내보내 주세요.");
     }
@@ -178,9 +235,10 @@ function render() {
   careController = undefined;
   sceneResize?.disconnect();
   editorResize?.disconnect();
-  root.innerHTML = `<div class="shell"><aside class="rail"><a href="#garden" class="brand-symbol" aria-label="작은숨 홈">${icon("leaf")}</a><nav aria-label="작업 공간"><button data-view="garden" class="rail-button ${view === "garden" ? "active" : ""}" aria-label="나의 정원" ${view === "garden" ? 'aria-current="page"' : ""}>${icon("home")}<span>정원</span></button><button data-view="draw" class="rail-button ${view === "draw" ? "active" : ""}" aria-label="그림 작업실" ${view === "draw" ? 'aria-current="page"' : ""}>${icon("pen")}<span>그리기</span></button><button data-view="rig" class="rail-button ${view === "rig" ? "active" : ""}" aria-label="움직임 작업실" ${view === "rig" ? 'aria-current="page"' : ""}>${icon("rig")}<span>움직임</span></button></nav><div class="rail-bottom">${button("guide", "안내", "book", "rail-button")}${button("settings", "설정", "settings", "rail-button")}</div></aside><div class="workspace"><header class="topbar"><a href="#garden" class="wordmark">작은숨<span>A LITTLE LIFE, DRAWN BY YOU</span></a><div class="save-pill">${icon("lock")}<span id="save-status">${dirty ? "작업 중인 그림" : "이 브라우저에 저장됨"}</span></div><div class="topbar-actions">${button("import", "불러오기", "upload", "quiet desktop-label")}${button("export", "프로젝트 저장", "download", "outline")}</div></header><main id="main-content" tabindex="-1">${view === "garden" ? gardenMarkup() : editorMarkup()}</main><footer class="footer"><span>작은 세계에, 당신의 온기를</span><span>로컬 우선 · 절차적 움직임 엔진 <i></i> v1.0</span></footer></div></div><input id="project-import" type="file" accept="application/json,.json" hidden><input id="photo-import" type="file" accept="image/png,image/jpeg,image/webp" hidden>`;
+  root.innerHTML = `<div class="shell"><aside class="rail"><a href="#garden" class="brand-symbol" aria-label="작은숨 홈">${icon("leaf")}</a><nav aria-label="작업 공간"><button data-view="garden" class="rail-button ${view === "garden" ? "active" : ""}" aria-label="나의 정원" ${view === "garden" ? 'aria-current="page"' : ""}>${icon("home")}<span>정원</span></button><button data-view="draw" class="rail-button ${view === "draw" ? "active" : ""}" aria-label="그림 작업실" ${view === "draw" ? 'aria-current="page"' : ""}>${icon("pen")}<span>그리기</span></button><button data-view="rig" class="rail-button ${view === "rig" ? "active" : ""}" aria-label="움직임 작업실" ${view === "rig" ? 'aria-current="page"' : ""}>${icon("rig")}<span>움직임</span></button></nav><div class="rail-bottom">${button("guide", "안내", "book", "rail-button")}${button("settings", "설정", "settings", "rail-button")}</div></aside><div class="workspace"><header class="topbar"><a href="#garden" class="wordmark">작은숨<span>A LITTLE LIFE, DRAWN BY YOU</span></a><div class="save-pill">${icon("lock")}<span id="save-status">${dirty ? "작업 중인 그림" : "이 브라우저에 저장됨"}</span></div><div class="topbar-actions"><button type="button" data-action="account" class="quiet cloud-account-button" aria-label="계정과 클라우드 동기화">${icon("cloud")}<span id="cloud-status">로그인</span></button>${button("import", "불러오기", "upload", "quiet desktop-label")}${button("export", "프로젝트 저장", "download", "outline")}</div></header><main id="main-content" tabindex="-1">${view === "garden" ? gardenMarkup() : editorMarkup()}</main><footer class="footer"><span>작은 세계에, 당신의 온기를</span><span>로컬 우선 · 절차적 움직임 엔진 <i></i> v1.0</span></footer></div></div><input id="project-import" type="file" accept="application/json,.json" hidden><input id="photo-import" type="file" accept="image/png,image/jpeg,image/webp" hidden>`;
   bindEvents();
   bindCanvases();
+  if (cloudSync) cloudUI?.update(cloudSync.state);
   const terrarium = root.querySelector<HTMLElement>(".scene-wrap");
   if (terrarium)
     careController = new CareTrayController(terrarium, {
@@ -195,7 +253,7 @@ function editorMarkup() {
   const rig = view === "rig";
   const hist = rig ? rigHistory : drawHistory;
   const leg = draft.rig.legs.find((l) => l.id === selectedLeg);
-  return `<div class="page-heading editor-heading"><div><p class="eyebrow">${rig ? "02 / GIVE IT A LITTLE MOTION" : "01 / EVERY LINE IS A BEGINNING"}</p><h1>${rig ? "선에, 숨을 불어넣어요" : "어떤 친구를 만나고 싶나요"}<span class="heading-dot">.</span></h1><p class="subtitle">${rig ? "관절을 그림 위로 옮겨보세요. 직접 그린 선이 함께 움직여요." : "잘 그리지 않아도 괜찮아요. 가장 당신다운 선으로 시작하세요."}</p></div><div class="editor-header-actions">${button("back-garden", "정원으로", "home", "quiet")}${button(rig ? "finish" : "next-rig", rig ? "정원에 데려가기" : "움직임 연결하기", "arrow", "primary")}</div></div><div class="editor-layout"><section class="paper-card"><div class="paper-toolbar"><div class="tool-group">${rig ? `<button data-action="rig-move" class="icon-button ${rigTool === "move" ? "selected" : ""}" aria-label="관절 이동">${icon("cursor")}</button><button data-action="rig-connect" class="icon-button ${rigTool === "connect" ? "selected" : ""}" aria-label="관절 연결">${icon("rig")}</button><span class="toolbar-hint">${rigTool === "connect" ? "서로 다른 다리의 끝 관절 2개를 선택" : "관절을 눌러 선택하고 드래그하세요"}</span>` : `<button data-action="pen" class="icon-button ${tool === "pen" ? "selected" : ""}" aria-label="펜">${icon("pen")}</button><button data-action="eraser" class="icon-button ${tool === "eraser" ? "selected" : ""}" aria-label="획 지우개">${icon("eraser")}</button><span class="toolbar-hint">획 단위 지우개 · 손가락 또는 펜으로 그리기</span>`}</div><div class="tool-group">${historyButtons(hist)}${button(rig ? "reset-rig" : "clear-drawing", rig ? "관절 모두 지우기" : "그림 모두 지우기", "trash", "icon-button danger")}</div></div><div class="paper-canvas-wrap"><canvas id="editor" aria-label="${rig ? "관절 편집 캔버스. 관절 목록과 좌표 입력으로도 수정할 수 있어요." : "그림 그리기 캔버스. 마우스, 터치, 펜으로 그릴 수 있어요."}" tabindex="0"></canvas><div class="paper-label">${rig ? "RIGGING CANVAS" : "DRAWING CANVAS"} <span>· ${draft.strokes.length} STROKES</span></div>${draft.strokes.length === 0 ? '<div class="empty-canvas-hint">여기, 작은 생명의 시작을 그려주세요<span>오른쪽 예시 친구로 시작할 수도 있어요</span></div>' : ""}</div><div class="paper-bottom"><span>${icon("lock")} 그림과 생일은 이 브라우저에만 저장돼요</span><span>${rig ? `${draft.rig.legs.length}개 다리 · ${draft.rig.legs.reduce((n, l) => n + l.joints.length, 0)}개 관절` : "Ctrl / ⌘ Z 실행 취소"}</span></div></section><aside class="editor-inspector">${rig ? `<section class="inspector-section preview-section"><div class="inspector-title"><h2>작은 움직임</h2><button data-action="preview-play" class="icon-button" aria-label="미리보기 ${previewPlaying ? "일시 정지" : "재생"}">${icon(previewPlaying ? "pause" : "play")}</button></div><canvas id="rig-preview" role="img" aria-label="현재 관절의 움직임 미리보기"></canvas><p>절차적 IK + 가중치 기반 선 변형</p></section><section class="inspector-section"><div class="inspector-title"><h2>관절 구조</h2><span class="small-badge">최대 8개 다리</span></div><div class="rig-anchor-list"><button data-joint="body" class="joint-row ${selectedJoint === "body" ? "active" : ""}"><span class="joint-dot body"></span>몸 중심<span>ROOT</span></button><button data-joint="head" class="joint-row ${selectedJoint === "head" ? "active" : ""}"><span class="joint-dot head"></span>머리 중심<span>HEAD</span></button></div><div class="leg-list">${draft.rig.legs.map((l, i) => `<div class="leg-item ${selectedLeg === l.id ? "active" : ""}"><button data-leg="${l.id}" class="leg-title">${icon("rig")}<strong>다리 ${i + 1}</strong><span>${l.joints.length} 관절</span></button><div class="joint-chain">${l.joints.map((j, k) => `<button data-joint="${j.id}" class="${selectedJoint === j.id ? "active" : ""}" aria-label="다리 ${i + 1} 관절 ${k + 1}">${k + 1}</button>`).join("<span>—</span>")}</div></div>`).join("")}</div><div class="joint-tools">${button("add-leg", "다리 추가", "plus", "outline")}${button("remove-leg", "선택 다리 삭제", "trash", "quiet")}</div>${leg ? `<div class="joint-count-control"><span>선택 다리 관절 수</span><div><button data-action="remove-joint" aria-label="관절 줄이기" ${leg.joints.length <= 2 ? "disabled" : ""}>−</button><strong>${leg.joints.length}</strong><button data-action="add-joint" aria-label="관절 늘리기" ${leg.joints.length >= 4 ? "disabled" : ""}>+</button></div></div>` : ""}${selectedJoint ? jointCoordinates() : ""}<p class="inspector-help">관절은 위에서 아래로 연결돼요. 연결 도구로 서로 다른 다리의 끝점을 이을 수 있어요 (최대 4관절).</p></section>` : `<section class="inspector-section"><div class="inspector-title"><h2>당신의 팔레트</h2><span>${icon("pen")}</span></div><div class="color-palette">${colors.map((c) => `<button data-color="${c}" style="--swatch:${c}" class="color-swatch ${brushColor === c ? "active" : ""}" aria-label="색상 ${c}" aria-pressed="${brushColor === c}">${brushColor === c ? icon("check") : ""}</button>`).join("")}<label class="custom-color" aria-label="색상 직접 선택"><input id="custom-color" type="color" value="${brushColor}" aria-label="사용자 지정 펜 색상">${icon("plus")}</label></div><label class="range-label" for="brush-size">선의 두께 <span id="brush-value">${Math.round(brushWidth * 600)} px</span></label><input id="brush-size" type="range" min="3" max="80" value="${Math.round(brushWidth * 600)}"><div class="brush-preview"><span style="height:${Math.min(brushWidth * 600, 42)}px;background:${brushColor}"></span></div><p class="inspector-help">그림은 벡터 획으로 저장돼요. 지우개는 닿은 획 전체를 지워요.</p></section><section class="inspector-section"><div class="inspector-title"><h2>작은 시작점</h2><span class="small-badge">예시 친구</span></div><div class="sample-buttons"><button data-sample="sprout"><span>🌱</span>모아</button><button data-sample="bunny"><span>🐰</span>보리</button><button data-sample="cloud"><span>☁️</span>구름</button><button data-sample="turtle"><span>🐢</span>토리 · 네발</button></div><p class="inspector-help">예시를 고르면 작업 중인 그림이 바뀌어요. 실행 취소로 돌아올 수 있어요.</p></section><section class="inspector-section tracing-section"><div class="inspector-title"><h2>사진 따라 그리기</h2>${icon("camera")}</div>${tracing ? `<p class="tracing-name">${e(tracing.fileName)}</p><label class="range-label">투명도 <span>${Math.round(tracing.opacity * 100)}%</span></label><input data-trace="opacity" type="range" min="5" max="80" value="${tracing.opacity * 100}" aria-label="사진 투명도"><label class="range-label">크기</label><input data-trace="scale" type="range" min="20" max="150" value="${tracing.scale * 100}" aria-label="사진 크기"><label class="range-label">가로 위치</label><input data-trace="offsetX" type="range" min="-50" max="50" value="${tracing.offsetX * 100}" aria-label="사진 가로 위치"><label class="range-label">세로 위치</label><input data-trace="offsetY" type="range" min="-50" max="50" value="${tracing.offsetY * 100}" aria-label="사진 세로 위치">${button("remove-photo", "사진 밑그림 제거", "close", "text-link")}` : button("photo", "사진 불러오기", "upload", "outline full-width")}<p class="inspector-help">사진 위에 직접 선을 그려보세요. 사진은 전송·저장·내보내기에 포함되지 않으며 작업실을 나가면 제거돼요.</p></section><section class="inspector-section name-section"><label for="pet-name">친구의 이름</label><input id="pet-name" type="text" maxlength="24" value="${e(draft.name)}" placeholder="이름을 지어주세요"><p class="inspector-help">${seasonLabel[project.birth.season]} · ${e(project.birth.temperament)}</p>${button("birth", "탄생 이야기 바꾸기", "leaf", "text-link")}</section>`}</aside></div>`;
+  return `<div class="page-heading editor-heading"><div><p class="eyebrow">${rig ? "02 / GIVE IT A LITTLE MOTION" : "01 / EVERY LINE IS A BEGINNING"}</p><h1>${rig ? "선에, 숨을 불어넣어요" : "어떤 친구를 만나고 싶나요"}<span class="heading-dot">.</span></h1><p class="subtitle">${rig ? "관절을 그림 위로 옮겨보세요. 직접 그린 선이 함께 움직여요." : "잘 그리지 않아도 괜찮아요. 가장 당신다운 선으로 시작하세요."}</p></div><div class="editor-header-actions">${button("back-garden", "정원으로", "home", "quiet")}${button(rig ? "finish" : "next-rig", rig ? "정원에 데려가기" : "움직임 연결하기", "arrow", "primary")}</div></div><div class="editor-layout"><section class="paper-card"><div class="paper-toolbar"><div class="tool-group">${rig ? `<button data-action="rig-move" class="icon-button ${rigTool === "move" ? "selected" : ""}" aria-label="관절 이동">${icon("cursor")}</button><button data-action="rig-connect" class="icon-button ${rigTool === "connect" ? "selected" : ""}" aria-label="관절 연결">${icon("rig")}</button><span class="toolbar-hint">${rigTool === "connect" ? "서로 다른 다리의 끝 관절 2개를 선택" : "관절을 눌러 선택하고 드래그하세요"}</span>` : `<button data-action="pen" class="icon-button ${tool === "pen" ? "selected" : ""}" aria-label="펜">${icon("pen")}</button><button data-action="eraser" class="icon-button ${tool === "eraser" ? "selected" : ""}" aria-label="획 지우개">${icon("eraser")}</button><span class="toolbar-hint">획 단위 지우개 · 손가락 또는 펜으로 그리기</span>`}</div><div class="tool-group">${historyButtons(hist)}${button(rig ? "reset-rig" : "clear-drawing", rig ? "관절 모두 지우기" : "그림 모두 지우기", "trash", "icon-button danger")}</div></div><div class="paper-canvas-wrap"><canvas id="editor" aria-label="${rig ? "관절 편집 캔버스. 관절 목록과 좌표 입력으로도 수정할 수 있어요." : "그림 그리기 캔버스. 마우스, 터치, 펜으로 그릴 수 있어요."}" tabindex="0"></canvas><div class="paper-label">${rig ? "RIGGING CANVAS" : "DRAWING CANVAS"} <span>· ${draft.strokes.length} STROKES</span></div>${draft.strokes.length === 0 ? '<div class="empty-canvas-hint">여기, 작은 생명의 시작을 그려주세요<span>오른쪽 예시 친구로 시작할 수도 있어요</span></div>' : ""}</div><div class="paper-bottom"><span>${icon("lock")} ${cloudSync?.state.enabled ? "동기화 켜짐 · 계정에 저장돼요" : "동기화를 켜기 전에는 기기에만 저장돼요"}</span><span>${rig ? `${draft.rig.legs.length}개 다리 · ${draft.rig.legs.reduce((n, l) => n + l.joints.length, 0)}개 관절` : "Ctrl / ⌘ Z 실행 취소"}</span></div></section><aside class="editor-inspector">${rig ? `<section class="inspector-section preview-section"><div class="inspector-title"><h2>작은 움직임</h2><button data-action="preview-play" class="icon-button" aria-label="미리보기 ${previewPlaying ? "일시 정지" : "재생"}">${icon(previewPlaying ? "pause" : "play")}</button></div><canvas id="rig-preview" role="img" aria-label="현재 관절의 움직임 미리보기"></canvas><p>절차적 IK + 가중치 기반 선 변형</p></section><section class="inspector-section"><div class="inspector-title"><h2>관절 구조</h2><span class="small-badge">최대 8개 다리</span></div><div class="rig-anchor-list"><button data-joint="body" class="joint-row ${selectedJoint === "body" ? "active" : ""}"><span class="joint-dot body"></span>몸 중심<span>ROOT</span></button><button data-joint="head" class="joint-row ${selectedJoint === "head" ? "active" : ""}"><span class="joint-dot head"></span>머리 중심<span>HEAD</span></button></div><div class="leg-list">${draft.rig.legs.map((l, i) => `<div class="leg-item ${selectedLeg === l.id ? "active" : ""}"><button data-leg="${l.id}" class="leg-title">${icon("rig")}<strong>다리 ${i + 1}</strong><span>${l.joints.length} 관절</span></button><div class="joint-chain">${l.joints.map((j, k) => `<button data-joint="${j.id}" class="${selectedJoint === j.id ? "active" : ""}" aria-label="다리 ${i + 1} 관절 ${k + 1}">${k + 1}</button>`).join("<span>—</span>")}</div></div>`).join("")}</div><div class="joint-tools">${button("add-leg", "다리 추가", "plus", "outline")}${button("remove-leg", "선택 다리 삭제", "trash", "quiet")}</div>${leg ? `<div class="joint-count-control"><span>선택 다리 관절 수</span><div><button data-action="remove-joint" aria-label="관절 줄이기" ${leg.joints.length <= 2 ? "disabled" : ""}>−</button><strong>${leg.joints.length}</strong><button data-action="add-joint" aria-label="관절 늘리기" ${leg.joints.length >= 4 ? "disabled" : ""}>+</button></div></div>` : ""}${selectedJoint ? jointCoordinates() : ""}<p class="inspector-help">관절은 위에서 아래로 연결돼요. 연결 도구로 서로 다른 다리의 끝점을 이을 수 있어요 (최대 4관절).</p></section>` : `<section class="inspector-section"><div class="inspector-title"><h2>당신의 팔레트</h2><span>${icon("pen")}</span></div><div class="color-palette">${colors.map((c) => `<button data-color="${c}" style="--swatch:${c}" class="color-swatch ${brushColor === c ? "active" : ""}" aria-label="색상 ${c}" aria-pressed="${brushColor === c}">${brushColor === c ? icon("check") : ""}</button>`).join("")}<label class="custom-color" aria-label="색상 직접 선택"><input id="custom-color" type="color" value="${brushColor}" aria-label="사용자 지정 펜 색상">${icon("plus")}</label></div><label class="range-label" for="brush-size">선의 두께 <span id="brush-value">${Math.round(brushWidth * 600)} px</span></label><input id="brush-size" type="range" min="3" max="80" value="${Math.round(brushWidth * 600)}"><div class="brush-preview"><span style="height:${Math.min(brushWidth * 600, 42)}px;background:${brushColor}"></span></div><p class="inspector-help">그림은 벡터 획으로 저장돼요. 지우개는 닿은 획 전체를 지워요.</p></section><section class="inspector-section"><div class="inspector-title"><h2>작은 시작점</h2><span class="small-badge">예시 친구</span></div><div class="sample-buttons"><button data-sample="sprout"><span>🌱</span>모아</button><button data-sample="bunny"><span>🐰</span>보리</button><button data-sample="cloud"><span>☁️</span>구름</button><button data-sample="turtle"><span>🐢</span>토리 · 네발</button></div><p class="inspector-help">예시를 고르면 작업 중인 그림이 바뀌어요. 실행 취소로 돌아올 수 있어요.</p></section><section class="inspector-section tracing-section"><div class="inspector-title"><h2>사진 따라 그리기</h2>${icon("camera")}</div>${tracing ? `<p class="tracing-name">${e(tracing.fileName)}</p><label class="range-label">투명도 <span>${Math.round(tracing.opacity * 100)}%</span></label><input data-trace="opacity" type="range" min="5" max="80" value="${tracing.opacity * 100}" aria-label="사진 투명도"><label class="range-label">크기</label><input data-trace="scale" type="range" min="20" max="150" value="${tracing.scale * 100}" aria-label="사진 크기"><label class="range-label">가로 위치</label><input data-trace="offsetX" type="range" min="-50" max="50" value="${tracing.offsetX * 100}" aria-label="사진 가로 위치"><label class="range-label">세로 위치</label><input data-trace="offsetY" type="range" min="-50" max="50" value="${tracing.offsetY * 100}" aria-label="사진 세로 위치">${button("remove-photo", "사진 밑그림 제거", "close", "text-link")}` : button("photo", "사진 불러오기", "upload", "outline full-width")}<p class="inspector-help">사진 위에 직접 선을 그려보세요. 사진은 전송·저장·내보내기에 포함되지 않으며 작업실을 나가면 제거돼요.</p></section><section class="inspector-section name-section"><label for="pet-name">친구의 이름</label><input id="pet-name" type="text" maxlength="24" value="${e(draft.name)}" placeholder="이름을 지어주세요"><p class="inspector-help">${seasonLabel[project.birth.season]} · ${e(project.birth.temperament)}</p>${button("birth", "탄생 이야기 바꾸기", "leaf", "text-link")}</section>`}</aside></div>`;
 }
 function jointCoordinates() {
   const q = getJoint(selectedJoint);
@@ -487,6 +545,9 @@ function action(a: string) {
       break;
     case "guide":
       openGuide();
+      break;
+    case "account":
+      cloudUI?.open();
       break;
     case "settings":
       openSettings();
@@ -1147,7 +1208,7 @@ function placeCareItem(item: CareItem, point: Point) {
     .querySelector<HTMLCanvasElement>("#scene")
     ?.focus({ preventScroll: true });
   toast(
-    `${item === "water" ? "물" : FOOD_OPTIONS.find((f) => f.id === item)!.name}를 놓았어요. 표시한 바닥 위치로 찾아가요`,
+    `${item === "water" ? "물" : FOOD_OPTIONS.find((f) => f.id === item)!.name} 놓기 완료! 표시한 바닥 위치로 찾아가요`,
   );
 }
 let modalReturnFocus: HTMLElement | null = null;
@@ -1201,7 +1262,6 @@ function modal(title: string, body: string, footer = "", wide = false) {
       }
     }
   });
-  // Focus synchronously: a rapid Escape must not land on the old trigger.
   d.querySelector<HTMLElement>("input,select,button")?.focus();
 }
 function confirmDialog(
@@ -1233,7 +1293,7 @@ function openBirth(newPet: boolean) {
       )
       .join(
         "",
-      )}</select></div><div class="form-field"><label for="birth-city">태어난 도시</label><select id="birth-city">${CITY_PRESETS.map((c) => `<option value="${c.id}" ${project.birth.city === c.id ? "selected" : ""}>${c.name}</option>`).join("")}</select></div><div class="privacy-note">${icon("lock")}<p>이름·생일·그림은 이 브라우저에만 저장돼요. 계절에 따른 성격은 창작 설정이며, 과거의 실제 날씨를 뜻하지 않아요.</p></div><p id="birth-error" class="form-error" role="alert"></p>`,
+      )}</select></div><div class="form-field"><label for="birth-city">태어난 도시</label><select id="birth-city">${CITY_PRESETS.map((c) => `<option value="${c.id}" ${project.birth.city === c.id ? "selected" : ""}>${c.name}</option>`).join("")}</select></div><div class="privacy-note">${icon("lock")}<p>이름·생일·그림은 기본적으로 기기에 저장되며, 동기화를 직접 켜면 Supabase 계정에도 저장돼요. 계절에 따른 성격은 창작 설정이며, 과거의 실제 날씨를 뜻하지 않아요.</p></div><p id="birth-error" class="form-error" role="alert"></p>`,
     `<button id="birth-cancel" class="quiet">다음에 할게요</button><button id="birth-save" class="primary">${newPet ? "그리기 시작하기" : "이야기 저장"} ${icon("arrow")}</button>`,
   );
   let mode = project.birth.mode;
@@ -1402,7 +1462,7 @@ function openWeather() {
 function openSettings() {
   modal(
     "편안한 작은 세계",
-    `<div class="setting-row"><div><strong>움직임 줄이기</strong><p>빗방울·눈·배경 움직임을 줄이고 편안한 속도로 보여줘요.</p></div><input id="reduce-motion" type="checkbox" role="switch" aria-label="움직임 줄이기" ${project.preferences.reducedMotion ? "checked" : ""}></div><div class="privacy-note">${icon("lock")}<p>서버 계정·추적·분석 도구가 없어요. 프로젝트는 이 기기의 현재 브라우저 저장소에만 남아요. 브라우저 데이터를 지우면 사라지므로 파일로도 저장해 주세요.</p></div><div class="settings-links"><a href="https://github.com/Probius-ai" target="_blank" rel="noopener noreferrer">만든 이의 GitHub ${icon("arrow")}</a></div>`,
+    `<div class="setting-row"><div><strong>움직임 줄이기</strong><p>빗방울·눈·배경 움직임을 줄이고 편안한 속도로 보여줘요.</p></div><input id="reduce-motion" type="checkbox" role="switch" aria-label="움직임 줄이기" ${project.preferences.reducedMotion ? "checked" : ""}></div><div class="privacy-note">${icon("lock")}<p>기본은 이 브라우저에만 저장돼요. 계정 메뉴에서 GitHub 로그인 후 직접 동기화를 켜면 Supabase에도 저장돼요. 사진 밑그림·날씨 응답·API 키는 동기화하지 않아요. 추적·분석 도구는 없으며 중요한 그림은 파일로도 백업해 주세요.</p></div><div class="settings-links"><a href="https://github.com/Probius-ai" target="_blank" rel="noopener noreferrer">만든 이의 GitHub ${icon("arrow")}</a></div>`,
   );
   document.querySelector("#reduce-motion")!.addEventListener("change", (ev) => {
     project.preferences.reducedMotion = (ev.target as HTMLInputElement).checked;
@@ -1421,7 +1481,6 @@ function openGuide() {
 }
 window.addEventListener("keydown", (ev) => {
   if (document.querySelector(".modal")) {
-    // Escape also works if focus is temporarily outside the dialog.
     if (ev.key === "Escape") {
       ev.preventDefault();
       closeModal();
@@ -1444,14 +1503,150 @@ window.addEventListener("hashchange", () => {
   if (["garden", "draw", "rig"].includes(hash) && view !== hash)
     navigate(hash as View);
 });
-window.addEventListener("beforeunload", () => {
+window.addEventListener("beforeunload", (event) => {
   if (dirty) commitDraft();
   try {
-    saveProject(project);
+    saveLocalNow();
   } catch {
-    /* The visible export path remains available. */
+    event.preventDefault();
+    event.returnValue = "";
+  }
+  if (emergencyCopies.size) {
+    event.preventDefault();
+    event.returnValue = "";
   }
 });
+function applyAccountProject(next: Project) {
+  clearTimeout(saveTimer);
+  clearTracing();
+  project = clone(next);
+  draft = clone(project.pet);
+  dirty = false;
+  drawHistory.clear();
+  rigHistory.clear();
+  food = undefined;
+  water = undefined;
+  pointer = undefined;
+  consumedFood = false;
+  consumedWater = false;
+  state = createPetState(project.pet, {
+    x: sceneWidth * 0.49 || 380,
+    y: sceneHeight * 0.82 || 330,
+  });
+  selectedJoint = "";
+  selectedLeg = "";
+  connectFrom = "";
+  render();
+}
+try {
+  const client = new CloudClient();
+  cloudSync = new ProjectSync({
+    storage: localStorage,
+    transport: client,
+    getGuest: () => {
+      try {
+        return emergencyCopy("guest") ?? loadProject() ?? clone(initialGuest);
+      } catch {
+        return clone(initialGuest);
+      }
+    },
+    saveGuest: (value) => saveProject(value),
+    applyProject: applyAccountProject,
+    changed: (value) => cloudUI?.update(value),
+  });
+  const lease = new AccountWorkspaceLease();
+  let authGeneration = 0;
+  let requestedAccountId: string | null = null;
+  const connectAccount = async (account: Account | null, force = false) => {
+    if (!force && requestedAccountId === (account?.id ?? null)) return;
+    requestedAccountId = account?.id ?? null;
+    const generation = ++authGeneration;
+    try {
+      if (dirty) commitDraft();
+      if (!cloudSync?.state.accountWorkspace || accountOwnershipValid)
+        saveLocalNow();
+    } catch {
+      // This is best-effort; the account-keyed session/memory recovery and unload
+      // warning remain if the browser requires a gesture before downloading.
+      downloadFile(
+        JSON.stringify(project, null, 2),
+        `little-breath-unsaved-recovery-${new Date().toISOString().slice(0, 10)}.json`,
+      );
+      toast(
+        "저장하지 못한 이전 사본의 복구 파일 다운로드를 요청했어요. 다운로드 목록을 확인해 주세요.",
+      );
+    }
+    cloudSync?.setAccount(null);
+    accountOwnershipValid = false;
+    lease.release();
+    if (!account) return;
+    const writable = await lease.acquire(account.id);
+    if (generation === authGeneration) {
+      accountOwnershipValid = writable;
+      cloudSync?.setAccount(account, writable);
+      if (emergencyCopy(account.id))
+        toast(
+          "저장하지 못한 임시 사본이 있어요. 계정 메뉴에서 파일로 복구할 수 있어요.",
+        );
+    }
+  };
+  cloudUI = new CloudAccountUI({
+    sync: cloudSync,
+    client,
+    modal,
+    flushLocal: () => {
+      if (dirty) commitDraft();
+      saveLocalNow();
+    },
+    reconnectAccount: async () => {
+      const account = cloudSync?.state.account;
+      if (account) await connectAccount(account, true);
+    },
+    emergencyCopy: () => emergencyCopy(cloudSync?.state.account?.id ?? "guest"),
+    toast,
+  });
+  // initialize consumes OAuth query parameters synchronously, before routing.
+  void client
+    .initialize((account) => {
+      void connectAccount(account);
+    })
+    .then((message) => {
+      if (message) toast(message);
+    })
+    .catch(() =>
+      toast(
+        "로그인 연결을 확인하지 못했어요. 로컬 모드는 계속 사용할 수 있어요.",
+      ),
+    );
+  window.addEventListener("pagehide", () => {
+    authGeneration++;
+    try {
+      if (dirty) commitDraft();
+      saveLocalNow();
+    } catch {
+      /* recoverable copy retained */
+    }
+    cloudSync?.pause();
+    accountOwnershipValid = false;
+    lease.release();
+  });
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      void client
+        .currentAccount()
+        .then((account) => connectAccount(account, true))
+        .catch(() =>
+          toast("로그인 상태를 다시 확인해 주세요. 게스트 사본은 그대로예요."),
+        );
+    }
+  });
+  window.addEventListener("online", () => void cloudSync?.retry());
+  window.addEventListener("focus", () => {
+    if (cloudSync?.state.enabled) void cloudSync.refresh();
+  });
+} catch {
+  storageWarning ||= "로그인 저장소를 사용할 수 없어 로컬 모드로 열었어요.";
+}
 render();
 requestAnimationFrame(frame);
 if (storageWarning) toast(storageWarning);

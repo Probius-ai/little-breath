@@ -1,0 +1,124 @@
+.cloud-account {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  background: #f4f5ef;
+  border: 1px solid #e2e7d9;
+  border-radius: 16px;
+  margin: 20px 0 12px;
+}
+.cloud-account p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.cloud-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #e6ecdc;
+  color: #6b805c;
+  font-size: 25px;
+}
+.cloud-status-line {
+  font-size: 12px;
+  color: #637353;
+  padding: 8px 0;
+  line-height: 1.7;
+}
+.cloud-disclosure {
+  margin: 16px 0;
+}
+.cloud-disclosure strong {
+  display: inline-block;
+  margin-bottom: 6px;
+}
+.cloud-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 17px 0;
+  color: #5b614f;
+  cursor: pointer;
+}
+.cloud-consent input {
+  flex: 0 0 17px;
+  margin: 3px 0 0;
+  accent-color: #7d925f;
+}
+.cloud-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.cloud-actions button {
+  flex: 1;
+  min-width: 135px;
+}
+.cloud-conflict {
+  border: 1px solid #ddc99a;
+  background: #fffcf3;
+  border-radius: 16px;
+  padding: 18px;
+  margin-top: 24px;
+}
+.cloud-conflict h3 {
+  font-size: 16px;
+  margin: 0 0 10px;
+}
+.cloud-conflict p,
+.cloud-recoveries p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #777765;
+}
+.cloud-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border-top: 1px solid #e8dfc7;
+  padding: 14px 0;
+}
+.cloud-copy strong {
+  font-size: 13px;
+}
+.cloud-copy span {
+  font-size: 11px;
+  color: #858573;
+}
+.cloud-copy button {
+  align-self: flex-start;
+}
+.cloud-recoveries {
+  margin-top: 20px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.cloud-recoveries summary {
+  cursor: pointer;
+}
+.cloud-recoveries > div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  border-top: 1px solid #eceee5;
+  padding: 10px 0;
+}
+#cloud-panel .inspector-help {
+  margin-top: 12px;
+}
+@media (max-width: 600px) {
+  .topbar-actions [data-action="account"] span {
+    display: inline;
+  }
+  .cloud-actions {
+    flex-direction: column;
+  }
+}
