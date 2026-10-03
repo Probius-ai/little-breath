@@ -169,8 +169,8 @@
     },
     {
       "path": "src/main.ts",
-      "size": 66764,
-      "sha256": "20d737ca1ffdf9ef4c52f64ddd1cc48a14cbca15d611524af2f5ec90ebfeb416"
+      "size": 66967,
+      "sha256": "b82ff975829caa1f799fa296c8c180cdfb7f8a94569bc07186882562cd76768e"
     },
     {
       "path": "src/project.ts",
@@ -209,8 +209,8 @@
     },
     {
       "path": "tests/browser/studio.spec.ts",
-      "size": 7245,
-      "sha256": "44c1e20415230765613dbdc26e6088a1acfb446f4e48e29aef2ca41800256f67"
+      "size": 7540,
+      "sha256": "e31f203cb8543fe7cfacf433a004662087fee8ee51f7a305f24e56d7b087efb7"
     },
     {
       "path": "tests/care-placement.test.ts",
