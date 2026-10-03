@@ -126,9 +126,16 @@ test("birth/name validation, rename, dialog focus and persistence", async ({
   await expect(
     page.getByRole("heading", { name: "토닥이", exact: true }),
   ).toBeVisible();
-  await page.locator('[data-action="weather"]').first().click();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  // Repeated immediate dismissal catches the previous deferred-focus race.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await page.locator('[data-action="weather"]').first().click();
+    if (attempt === 1) {
+      // A visible dialog must honor Escape even if focus briefly leaves it.
+      await page.locator("#main-content").focus();
+    }
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  }
 });
 
 test("photo tracing is ephemeral and food earns growth after arrival", async ({
