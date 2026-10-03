@@ -136,8 +136,9 @@ test("photo tracing is ephemeral and food earns growth after arrival", async ({
 }) => {
   await page.goto("/");
   await page.locator('[data-view="draw"]').click();
+  // Synthetic 1×1 PNG with valid chunk CRCs for strict browser decoders.
   const png = Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=",
     "base64",
   );
   await page.locator("#photo-import").setInputFiles({
