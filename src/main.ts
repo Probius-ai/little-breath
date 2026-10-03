@@ -1201,10 +1201,8 @@ function modal(title: string, body: string, footer = "", wide = false) {
       }
     }
   });
-  setTimeout(
-    () => d.querySelector<HTMLElement>("input,select,button")?.focus(),
-    20,
-  );
+  // Focus synchronously: a rapid Escape must not land on the old trigger.
+  d.querySelector<HTMLElement>("input,select,button")?.focus();
 }
 function confirmDialog(
   title: string,
@@ -1422,7 +1420,14 @@ function openGuide() {
     .addEventListener("click", closeModal);
 }
 window.addEventListener("keydown", (ev) => {
-  if (document.querySelector(".modal")) return;
+  if (document.querySelector(".modal")) {
+    // Escape also works if focus is temporarily outside the dialog.
+    if (ev.key === "Escape") {
+      ev.preventDefault();
+      closeModal();
+    }
+    return;
+  }
   const target = ev.target as HTMLElement;
   if (target.matches("input,textarea,select")) return;
   if (
