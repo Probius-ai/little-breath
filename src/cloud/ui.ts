@@ -15,6 +15,7 @@ const time = (value: string) => new Date(value).toLocaleString("ko-KR");
 export class CloudAccountUI {
   private working = false;
   private actionEpoch = 0;
+  private actionName = "";
   constructor(private options: Options) {}
   open() {
     try {
@@ -121,10 +122,12 @@ export class CloudAccountUI {
       this.actionEpoch++;
       sync.pause();
       this.working = false;
+      this.actionName = "";
       this.update(sync.state);
       return;
     }
     if (action === "logout" && this.working) {
+      if (this.actionName === "logout") return;
       sync.pause();
       this.working = false;
     }
@@ -136,7 +139,21 @@ export class CloudAccountUI {
       return;
     const epoch = ++this.actionEpoch;
     this.working = true;
+    this.actionName = action;
     try {
+      if (action === "logout") {
+        // Signing out must remain possible on shared devices even if local
+        // storage is full. flushLocal already retains an emergency copy.
+        sync.pause();
+        try {
+          this.options.flushLocal();
+        } catch (error) {
+          this.options.toast((error as Error).message);
+        }
+        this.update(sync.state);
+        await client.logout();
+        return;
+      }
       this.options.flushLocal();
       this.update(sync.state);
       if (action === "login") await client.login();
@@ -146,15 +163,12 @@ export class CloudAccountUI {
       if (action === "retry") await sync.refresh();
       if (action === "use-local") await sync.resolve("local");
       if (action === "use-cloud") await sync.resolve("cloud");
-      if (action === "logout") {
-        sync.pause();
-        await client.logout();
-      }
     } catch (error) {
       this.options.toast((error as Error).message);
     } finally {
       if (epoch === this.actionEpoch) {
         this.working = false;
+        this.actionName = "";
         this.update(sync.state);
       }
     }

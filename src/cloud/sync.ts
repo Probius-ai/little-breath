@@ -509,23 +509,27 @@ export class ProjectSync {
     if (!this.enabled || !this.cache?.conflict || this.busy) return;
     const before = clone(this.cache),
       row = this.cache.conflict;
-    this.cache.recoveries.push({
-      savedAt: new Date().toISOString(),
-      local: clone(this.local),
-      cloud: clone(row.project),
-    });
-    this.cache.revision = row.revision;
-    this.cache.base = clone(row.project);
-    this.cache.conflict = null;
-    this.cache.pending = null;
-    if (choice === "cloud") this.cache.project = clone(row.project);
-    else this.queue();
     try {
+      // Validate the proposed upload before changing conflict/revision state.
+      if (choice === "local") cloudProject(this.local);
+      this.cache.recoveries.push({
+        savedAt: new Date().toISOString(),
+        local: clone(this.local),
+        cloud: clone(row.project),
+      });
+      this.cache.revision = row.revision;
+      this.cache.base = clone(row.project);
+      this.cache.conflict = null;
+      this.cache.pending = null;
+      if (choice === "cloud") this.cache.project = clone(row.project);
+      else this.queue();
       this.persist();
-    } catch {
+    } catch (error) {
       this.cache = before;
       this.error(
-        "두 사본을 보관할 공간이 부족해요. 먼저 두 파일을 내려받아 주세요.",
+        error instanceof Error
+          ? error.message
+          : "두 사본을 보관하지 못했어요. 먼저 두 파일을 내려받아 주세요.",
       );
       return;
     }
