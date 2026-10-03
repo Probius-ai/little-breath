@@ -1,16 +1,17 @@
 {
-  "release": "optional-github-supabase-sync-v2",
+  "release": "optional-github-supabase-sync-v3",
   "verification": {
-    "unit_integration": "122 passed",
+    "unit_integration": "125 passed",
     "frontend_server_types": "passed",
     "build": "passed",
     "format": "passed",
     "production_audit": "0 vulnerabilities",
     "database_rls_cas": "passed with rollback-only fixtures; zero rows left",
     "database_advisors": "security and performance: zero findings",
-    "browser_suite": "26 tests prepared; local runtime blocked by process sockets and cloud-browser localhost restriction; CI required",
+    "browser_suite": "Prior v2 exact head 5db66562efbed18afc23f363ecb049828837d687 passed 26; v3 has 27 tests and requires fresh CI",
     "actual_oauth": "provider enabled and exact redirects verified; post-deploy test pending",
-    "runtime_licenses": "All nine production dependency notices bundled in public/third-party-licenses.txt and verified in dist"
+    "runtime_licenses": "All nine production dependency notices bundled in public/third-party-licenses.txt and verified in dist",
+    "review": "Independent re-review confirmed oversized-conflict rollback and quota-safe logout; 25 targeted tests passed"
   },
   "files": [
     {
@@ -170,13 +171,13 @@
     },
     {
       "path": "src/cloud/sync.ts",
-      "bytes": 17031,
-      "sha256": "069fdbbc3d696c86d0d89adf72fbb1bb2406c4baf65ea8d57355ba29e2a47269"
+      "bytes": 17250,
+      "sha256": "4f1c9def2bd3a5004bf7adc8ce7b3900f32145bddcc3ecfc377403f1dfe1ffcd"
     },
     {
       "path": "src/cloud/ui.ts",
-      "bytes": 9870,
-      "sha256": "a0e0ce97016f04fe5f66fd543668ef4050a36702fcfe95184e40588f9e9a3466"
+      "bytes": 10375,
+      "sha256": "f6ac39c73af21fc43519787827fc9127117432d4aee1b2b60880557655342bec"
     },
     {
       "path": "src/engine/behavior.ts",
@@ -270,8 +271,8 @@
     },
     {
       "path": "tests/browser/cloud-sync.spec.ts",
-      "bytes": 11925,
-      "sha256": "8fb26d3ea18a275e55a4d40b945757af013260d9bff11d0b8da22ab41a76e214"
+      "bytes": 12824,
+      "sha256": "a749953e9d200290acff840d480253c5c9813dce6dfba55c4d651ab3a219dcfa"
     },
     {
       "path": "tests/browser/studio.spec.ts",
@@ -290,8 +291,13 @@
     },
     {
       "path": "tests/cloud-sync.test.ts",
-      "bytes": 16397,
-      "sha256": "5a0072c95998fe9b12ef3ce4a2a64fd3280a656ea703dad1dbcfa6a98aaa02ce"
+      "bytes": 17674,
+      "sha256": "07bf61c48b3da5598ddee40f7dcdbe6af2465ec36f7aa236f0c13ad120912f89"
+    },
+    {
+      "path": "tests/cloud-ui.test.ts",
+      "bytes": 1986,
+      "sha256": "c65a386114676556cdb76681602a5d3c1460a1af625767751280fe630e227b61"
     },
     {
       "path": "tests/engine.test.ts",
