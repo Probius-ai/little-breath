@@ -1,12 +1,14 @@
 # Third-party notices / 외부 구성요소 안내
 
-Last reviewed: 2026-10-02. This notice distinguishes application code, development tools, remote-service data, and excluded research assets. It is a practical release record, not a legal opinion or a promise of rights that an upstream publisher has not granted.
+Last reviewed: 2026-10-03. This notice distinguishes application code, development tools, remote-service data, and excluded research assets. It is a practical release record, not a legal opinion or a promise of rights that an upstream publisher has not granted.
 
 ## Application and build tools
 
 The project's root `LICENSE` applies only to original application code and assets covered by that license. Third-party rights and provider terms are not replaced by it.
 
-The browser application is designed without third-party runtime libraries. Development and test tools are installed by npm, with exact versions recorded in `package-lock.json`:
+The browser application uses the exactly pinned `@supabase/supabase-js` 2.117.2 SDK for optional authentication and private account storage. Its runtime dependency inventory is recorded in `package-lock.json`; full upstream notices are bundled in [`public/third-party-licenses.txt`](../public/third-party-licenses.txt) and copied into every deployed build. The Supabase SDK family, `@supabase/phoenix`, and `iceberg-js` use MIT; `tslib` uses 0BSD. Supabase hosting and GitHub account/provider terms are separate from these software licenses.
+
+Development and test tools are installed by npm, with resolved versions recorded in `package-lock.json`:
 
 - [Vite](https://github.com/vitejs/vite): MIT
 - [TypeScript](https://github.com/microsoft/TypeScript): Apache-2.0

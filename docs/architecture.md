@@ -37,7 +37,7 @@ The collapsible care tray is ephemeral UI. It contains seeds, berries, carrots, 
 
 A tap selects an item without placing anything. The user can then tap the garden, or focus it and use Left/Right, Home/End and Enter/Space. Escape, pointer cancellation, lost capture, off-scene release, drawer dismissal, resize, navigation, and page visibility loss cancel the pending placement. Nothing is rewarded on pointer-down, selection, drag, or cancellation. Existing consumption logic records care and XP only after the pet arrives and eats. Resource positions resize with the meadow.
 
-No durable project fields or storage keys change. Closing/reopening the tray does not reset the saved drawing, rig, name, care history, or growth. Placement previews and dropped consumables are temporary; saved progress remains the existing local-only version-one project.
+No durable project fields or storage keys change. Closing/reopening the tray does not reset the saved drawing, rig, name, care history, or growth. Placement previews and dropped consumables are temporary; saved progress remains the existing version-one project, local by default and optionally account-synced.
 
 ## Tracing privacy
 
@@ -48,3 +48,7 @@ The underlay accepts only local PNG/JPEG/WebP Files with matching binary signatu
 UI controls have labels and visible focus rings. Dialogs trap focus and Escape closes them. Rig coordinates can be changed numerically or by arrows (Shift for larger steps). Pen/touch use pointer capture. Reduced-motion preference stops ambient scene effects and is also inferred from the OS. Browser visibility pauses work, frame deltas are bounded, and high-DPI rendering is capped at 2x.
 
 Drawing itself still requires a pointing input; sample creatures provide an alternate starting point. User-authored color choices may be low-contrast. No claim of full WCAG conformance is made without a dedicated audit.
+
+## Optional cloud boundary
+
+`src/cloud/sync.ts` owns consent, account-specific device copies, immutable pending mutations, retries, server revisions and conflict recovery. `client.ts` owns tab-scoped PKCE auth and request-specific captured access tokens. `ui.ts` exposes disclosure, opt-in, pause/logout and copy selection through the existing accessible modal. Main UI persistence delegates to the active workspace without changing the guest storage key or project schema. Login never starts project synchronization. See [cloud-sync.md](cloud-sync.md) for the full contract and database verification.
