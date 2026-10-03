@@ -155,7 +155,12 @@ test("photo tracing is ephemeral and food earns growth after arrival", async ({
   await expect(page.locator(".tracing-name")).toHaveCount(0);
   await page.locator('[data-action="back-garden"]').click();
   await page.locator('[data-action="feed"]').click();
-  await page.locator('[data-food="carrot"]').click();
+  await page.locator('[data-care-item="carrot"]').click();
+  const scene = page.locator("#scene");
+  const sceneBox = (await scene.boundingBox())!;
+  await scene.click({
+    position: { x: sceneBox.width * 0.45, y: sceneBox.height * 0.6 },
+  });
   await expect(page.locator("#meals-value")).toContainText("1", {
     timeout: 20000,
   });
