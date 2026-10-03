@@ -515,3 +515,39 @@ test("server size/format rejection is permanent and preserves local data instead
     h.sync.dispose();
   }
 });
+
+test("oversized local conflict resolution retains both choices and the original revision", async () => {
+  const h = harness();
+  try {
+    const remote = createProject();
+    remote.pet.name = "원격 사본";
+    h.db.set(A, row(remote, 5));
+    h.sync.setAccount(account());
+    await h.sync.enable();
+    const big = clone(h.guest);
+    big.pet.strokes = Array.from({ length: 10 }, (_, i) => ({
+      id: `large-conflict-${i}`,
+      color: "#665744",
+      width: 0.02,
+      points: Array.from({ length: 12000 }, () => ({
+        x: 0.1234567890123456,
+        y: 0.9876543210987654,
+        pressure: 0.1234567890123456,
+      })),
+    }));
+    h.sync.write(big);
+    const before = h.sync.state;
+    await h.sync.resolve("local");
+    assert.equal(h.sync.state.revision, before.revision);
+    assert.deepEqual(h.sync.state.conflict, before.conflict);
+    assert.equal(h.sync.state.recoveries.length, 0);
+    assert.equal(h.sync.state.local.pet.strokes.length, 10);
+    assert.match(h.sync.state.message, /5MB/);
+    assert.equal(h.writes.length, 0);
+    await h.sync.resolve("cloud");
+    assert.equal(h.sync.state.local.pet.name, "원격 사본");
+    assert.equal(h.sync.state.recoveries[0].local.pet.strokes.length, 10);
+  } finally {
+    h.sync.dispose();
+  }
+});
