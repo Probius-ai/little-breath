@@ -29,7 +29,13 @@ import {
   type TimeOfDay,
 } from "./weather";
 import { renderScene } from "./scene";
-import { worldBounds, clampWorldX, placeResource } from "./world";
+import { worldBounds, clampWorldX } from "./world";
+import {
+  CareTrayController,
+  careTrayMarkup,
+  type CareTrayState,
+} from "./care-tray";
+import type { CareItem } from "./care-placement";
 import { icon, escapeHtml as e } from "./icons";
 import {
   FOOD_OPTIONS,
@@ -46,6 +52,8 @@ import {
 } from "./tracing";
 
 type View = "garden" | "draw" | "rig";
+const careUI: CareTrayState = { open: false, selected: null };
+let careController: CareTrayController | undefined;
 const root = document.querySelector<HTMLDivElement>("#app")!;
 const reducedQuery = matchMedia("(prefers-reduced-motion: reduce)");
 let project: Project;
@@ -166,14 +174,22 @@ function historyButtons(h: History<PetDrawing>) {
   return `<button data-action="undo" class="icon-button" aria-label="실행 취소" title="실행 취소 (Ctrl/⌘ Z)" ${h.canUndo ? "" : "disabled"}>${icon("undo")}</button><button data-action="redo" class="icon-button" aria-label="다시 실행" title="다시 실행 (Ctrl/⌘ Shift Z)" ${h.canRedo ? "" : "disabled"}>${icon("redo")}</button>`;
 }
 function render() {
+  careController?.dispose();
+  careController = undefined;
   sceneResize?.disconnect();
   editorResize?.disconnect();
   root.innerHTML = `<div class="shell"><aside class="rail"><a href="#garden" class="brand-symbol" aria-label="작은숨 홈">${icon("leaf")}</a><nav aria-label="작업 공간"><button data-view="garden" class="rail-button ${view === "garden" ? "active" : ""}" aria-label="나의 정원" ${view === "garden" ? 'aria-current="page"' : ""}>${icon("home")}<span>정원</span></button><button data-view="draw" class="rail-button ${view === "draw" ? "active" : ""}" aria-label="그림 작업실" ${view === "draw" ? 'aria-current="page"' : ""}>${icon("pen")}<span>그리기</span></button><button data-view="rig" class="rail-button ${view === "rig" ? "active" : ""}" aria-label="움직임 작업실" ${view === "rig" ? 'aria-current="page"' : ""}>${icon("rig")}<span>움직임</span></button></nav><div class="rail-bottom">${button("guide", "안내", "book", "rail-button")}${button("settings", "설정", "settings", "rail-button")}</div></aside><div class="workspace"><header class="topbar"><a href="#garden" class="wordmark">작은숨<span>A LITTLE LIFE, DRAWN BY YOU</span></a><div class="save-pill">${icon("lock")}<span id="save-status">${dirty ? "작업 중인 그림" : "이 브라우저에 저장됨"}</span></div><div class="topbar-actions">${button("import", "불러오기", "upload", "quiet desktop-label")}${button("export", "프로젝트 저장", "download", "outline")}</div></header><main id="main-content" tabindex="-1">${view === "garden" ? gardenMarkup() : editorMarkup()}</main><footer class="footer"><span>작은 세계에, 당신의 온기를</span><span>로컬 우선 · 절차적 움직임 엔진 <i></i> v1.0</span></footer></div></div><input id="project-import" type="file" accept="application/json,.json" hidden><input id="photo-import" type="file" accept="image/png,image/jpeg,image/webp" hidden>`;
   bindEvents();
   bindCanvases();
+  const terrarium = root.querySelector<HTMLElement>(".scene-wrap");
+  if (terrarium)
+    careController = new CareTrayController(terrarium, {
+      state: careUI,
+      onPlace: placeCareItem,
+    });
 }
 function gardenMarkup() {
-  return `<div class="page-heading"><div><p class="eyebrow"><span class="tiny-leaf">✦</span> YOUR LIVING SKETCHBOOK</p><h1>오늘도, 작은숨<span class="heading-dot">.</span></h1><p class="subtitle">서툰 선 하나에도, 살아갈 작은 세계가 필요하니까.</p></div>${button("new", "새로운 친구 그리기", "plus", "primary")}</div><div class="garden-grid"><section class="terrarium-card" aria-label="친구가 살아가는 정원"><div class="scene-wrap"><canvas id="scene" role="img" aria-label="${e(project.pet.name)}의 ${e(weather.description)} 정원. 아래 돌보기 버튼으로 상호작용할 수 있어요."></canvas><div class="scene-top"><div class="glass scene-location">${icon(sceneIcon[weather.scene])}<div><strong>${e(weather.locationName)}의 작은 정원</strong><span>${e(weather.description)} · ${weather.timeOfDay === "day" ? "낮" : "밤"}</span></div></div><button data-action="weather" class="glass source-chip">${weather.source === "demo" ? "MOCK · 미리보기" : "LIVE · OpenWeather"} ${icon("settings")}</button></div><div class="scene-note"><span class="live-dot"></span><span id="pet-thought">바람이 좋은 날, ${e(project.pet.name)}도 기분이 좋아요</span></div>${weather.source === "openweather" ? `<a class="scene-provider" href="https://openweathermap.org/" target="_blank" rel="noopener noreferrer"><img src="./openweather.png" alt="OpenWeather">Weather by OpenWeather${weather.stale ? " · 저장된 결과" : ""}</a>` : ""}<div class="scene-controls">${button("toggle-rig", showRig ? "관절 숨기기" : "관절 보기", "rig", `glass icon-button ${showRig ? "selected" : ""}`)}${button("pause", paused ? "재생" : "일시 정지", paused ? "play" : "pause", "glass icon-button")}${button("snapshot", "사진 저장", "camera", "glass icon-button")}</div></div><div class="care-toolbar"><div class="care-label"><span class="tiny-pulse"></span>같이 보내는 시간</div><div class="care-actions">${button("feed", "먹이 주기", "food", "care-button")}${button("drink", "물 주기", "water", "care-button")}${button("pet", "쓰다듬기", "heart", "care-button")}${button("follow", follow ? "따라오기 끄기" : "따라오기", "cursor", `care-button ${follow ? "selected" : ""}`)}${button("sleep", "쉬어가기", "moon", "care-button")}</div></div></section><aside class="companion-card"><div class="card-kicker"><span>MY COMPANION</span><span class="status-tag">함께하는 중</span></div><div class="portrait-wrap"><canvas id="portrait" aria-label="${e(project.pet.name)} 초상화" role="img"></canvas><span class="portrait-spark s1">✧</span><span class="portrait-spark s2">✦</span></div><div class="pet-identity"><h2>${e(project.pet.name)}</h2><button data-action="rename" aria-label="친구 이름 바꾸기" class="icon-button">${icon("pen")}</button></div><p class="temperament">${e(project.birth.temperament)}</p><div class="growth-card"><div><span id="growth-stage">${getGrowthStage(project.growth.experience).label}</span><span id="growth-xp">${project.growth.experience} XP</span></div><progress id="growth-progress" max="1" value="${getGrowthStage(project.growth.experience).progress}" aria-label="친구 성장 진행률"></progress><p id="growth-next">${getGrowthStage(project.growth.experience).nextAt ? `다음 성장까지 ${getGrowthStage(project.growth.experience).nextAt! - project.growth.experience} XP` : "함께한 마음이 단짝이 되었어요"}</p></div><div class="pet-stats"><div><span>${icon("heart")} 다정한 순간</span><strong id="affection-value">${project.care.affection}<small>번</small></strong></div><div><span>${icon("food")} 함께한 식사</span><strong id="meals-value">${project.care.meals}<small>번</small></strong></div></div><div class="companion-story">${icon("leaf")}<p>${seasonLabel[project.birth.season]}의 기운을 닮은 친구<br><span>생일 이야기는 상상으로 만든 성격이에요</span></p></div>${button("edit-pet", "친구의 모습 다듬기", "arrow", "text-link")}</aside></div><section class="weather-section"><div class="section-heading"><div><p class="eyebrow">A WORLD THAT CHANGES</p><h2>오늘의 하늘을 골라볼까요</h2></div><div class="day-toggle" role="group" aria-label="시간대"><button data-time="day" class="${weather.timeOfDay === "day" ? "active" : ""}" aria-pressed="${weather.timeOfDay === "day"}">${icon("sun")} 낮</button><button data-time="night" class="${weather.timeOfDay === "night" ? "active" : ""}" aria-pressed="${weather.timeOfDay === "night"}">${icon("moon")} 밤</button></div></div><div class="weather-cards">${SCENE_OPTIONS.map((s) => `<button class="weather-card weather-${s.id} ${weather.scene === s.id ? "active" : ""}" data-scene="${s.id}" aria-pressed="${weather.scene === s.id}"><div class="weather-card-art">${icon(sceneIcon[s.id])}<span class="mini-hill h1"></span><span class="mini-hill h2"></span>${s.id === "rain" || s.id === "storm" ? '<span class="mini-rain"></span>' : ""}${s.id === "snow" ? '<span class="mini-snow">· · ·<br> · ·</span>' : ""}</div><div class="weather-card-caption"><span>${e(s.label)}</span>${weather.scene === s.id ? icon("check") : '<span class="weather-empty">○</span>'}</div></button>`).join("")}</div><p class="section-footnote">날씨를 고르면 Mock 미리보기로 전환돼요. 실제 날씨는 ${button("weather", "날씨 연결 설정", "arrow", "inline-link")}에서 불러올 수 있어요</p></section><section class="journey-card"><div class="journey-icon">${icon("sparkle")}</div><div><p class="eyebrow">MADE BY YOUR HANDS</p><h3>당신의 선이, 이 친구의 전부예요</h3><p>그림의 선에 관절의 움직임을 부드럽게 나눠 담았어요. 작은 다리를 움직여 보세요.</p></div>${button("rig-pet", "움직임 살펴보기", "arrow", "outline")}</section>`;
+  return `<div class="page-heading"><div><p class="eyebrow"><span class="tiny-leaf">✦</span> YOUR LIVING SKETCHBOOK</p><h1>오늘도, 작은숨<span class="heading-dot">.</span></h1><p class="subtitle">서툰 선 하나에도, 살아갈 작은 세계가 필요하니까.</p></div>${button("new", "새로운 친구 그리기", "plus", "primary")}</div><div class="garden-grid"><section class="terrarium-card" aria-label="친구가 살아가는 정원"><div class="scene-wrap"><canvas id="scene" role="application" tabindex="0" aria-keyshortcuts="ArrowLeft ArrowRight Home End Enter Space Escape" aria-label="${e(project.pet.name)}의 ${e(weather.description)} 정원. 돌봄 서랍에서 먹이나 물을 고른 뒤 위치를 누르거나 방향키와 Enter로 놓을 수 있어요."></canvas><div class="scene-top"><div class="glass scene-location">${icon(sceneIcon[weather.scene])}<div><strong>${e(weather.locationName)}의 작은 정원</strong><span>${e(weather.description)} · ${weather.timeOfDay === "day" ? "낮" : "밤"}</span></div></div><button data-action="weather" class="glass source-chip">${weather.source === "demo" ? "MOCK · 미리보기" : "LIVE · OpenWeather"} ${icon("settings")}</button></div><div class="scene-note"><span class="live-dot"></span><span id="pet-thought">바람이 좋은 날, ${e(project.pet.name)}도 기분이 좋아요</span></div>${weather.source === "openweather" ? `<a class="scene-provider" href="https://openweathermap.org/" target="_blank" rel="noopener noreferrer"><img src="./openweather.png" alt="OpenWeather">Weather by OpenWeather${weather.stale ? " · 저장된 결과" : ""}</a>` : ""}<div class="scene-controls">${button("toggle-rig", showRig ? "관절 숨기기" : "관절 보기", "rig", `glass icon-button ${showRig ? "selected" : ""}`)}${button("pause", paused ? "재생" : "일시 정지", paused ? "play" : "pause", "glass icon-button")}${button("snapshot", "사진 저장", "camera", "glass icon-button")}</div>${careTrayMarkup(careUI)}</div><div class="care-toolbar"><div class="care-label"><span class="tiny-pulse"></span>같이 보내는 시간</div><div class="care-actions">${button("feed", "먹이 주기", "food", "care-button")}${button("drink", "물 주기", "water", "care-button")}${button("pet", "쓰다듬기", "heart", "care-button")}${button("follow", follow ? "따라오기 끄기" : "따라오기", "cursor", `care-button ${follow ? "selected" : ""}`)}${button("sleep", "쉬어가기", "moon", "care-button")}</div></div></section><aside class="companion-card"><div class="card-kicker"><span>MY COMPANION</span><span class="status-tag">함께하는 중</span></div><div class="portrait-wrap"><canvas id="portrait" aria-label="${e(project.pet.name)} 초상화" role="img"></canvas><span class="portrait-spark s1">✧</span><span class="portrait-spark s2">✦</span></div><div class="pet-identity"><h2>${e(project.pet.name)}</h2><button data-action="rename" aria-label="친구 이름 바꾸기" class="icon-button">${icon("pen")}</button></div><p class="temperament">${e(project.birth.temperament)}</p><div class="growth-card"><div><span id="growth-stage">${getGrowthStage(project.growth.experience).label}</span><span id="growth-xp">${project.growth.experience} XP</span></div><progress id="growth-progress" max="1" value="${getGrowthStage(project.growth.experience).progress}" aria-label="친구 성장 진행률"></progress><p id="growth-next">${getGrowthStage(project.growth.experience).nextAt ? `다음 성장까지 ${getGrowthStage(project.growth.experience).nextAt! - project.growth.experience} XP` : "함께한 마음이 단짝이 되었어요"}</p></div><div class="pet-stats"><div><span>${icon("heart")} 다정한 순간</span><strong id="affection-value">${project.care.affection}<small>번</small></strong></div><div><span>${icon("food")} 함께한 식사</span><strong id="meals-value">${project.care.meals}<small>번</small></strong></div></div><div class="companion-story">${icon("leaf")}<p>${seasonLabel[project.birth.season]}의 기운을 닮은 친구<br><span>생일 이야기는 상상으로 만든 성격이에요</span></p></div>${button("edit-pet", "친구의 모습 다듬기", "arrow", "text-link")}</aside></div><section class="weather-section"><div class="section-heading"><div><p class="eyebrow">A WORLD THAT CHANGES</p><h2>오늘의 하늘을 골라볼까요</h2></div><div class="day-toggle" role="group" aria-label="시간대"><button data-time="day" class="${weather.timeOfDay === "day" ? "active" : ""}" aria-pressed="${weather.timeOfDay === "day"}">${icon("sun")} 낮</button><button data-time="night" class="${weather.timeOfDay === "night" ? "active" : ""}" aria-pressed="${weather.timeOfDay === "night"}">${icon("moon")} 밤</button></div></div><div class="weather-cards">${SCENE_OPTIONS.map((s) => `<button class="weather-card weather-${s.id} ${weather.scene === s.id ? "active" : ""}" data-scene="${s.id}" aria-pressed="${weather.scene === s.id}"><div class="weather-card-art">${icon(sceneIcon[s.id])}<span class="mini-hill h1"></span><span class="mini-hill h2"></span>${s.id === "rain" || s.id === "storm" ? '<span class="mini-rain"></span>' : ""}${s.id === "snow" ? '<span class="mini-snow">· · ·<br> · ·</span>' : ""}</div><div class="weather-card-caption"><span>${e(s.label)}</span>${weather.scene === s.id ? icon("check") : '<span class="weather-empty">○</span>'}</div></button>`).join("")}</div><p class="section-footnote">날씨를 고르면 Mock 미리보기로 전환돼요. 실제 날씨는 ${button("weather", "날씨 연결 설정", "arrow", "inline-link")}에서 불러올 수 있어요</p></section><section class="journey-card"><div class="journey-icon">${icon("sparkle")}</div><div><p class="eyebrow">MADE BY YOUR HANDS</p><h3>당신의 선이, 이 친구의 전부예요</h3><p>그림의 선에 관절의 움직임을 부드럽게 나눠 담았어요. 작은 다리를 움직여 보세요.</p></div>${button("rig-pet", "움직임 살펴보기", "arrow", "outline")}</section>`;
 }
 function editorMarkup() {
   const rig = view === "rig";
@@ -424,13 +440,10 @@ function action(a: string) {
       render();
       break;
     case "feed":
-      openFood();
+      careController?.reveal(selectedFood);
       break;
     case "drink":
-      water = placeResource(state.position, sceneWidth, sceneHeight, 80);
-      consumedWater = false;
-      setPetAction(state, "drink", water);
-      follow = false;
+      careController?.reveal("water");
       break;
     case "pet":
       if (performance.now() - lastPetAt < 3000) {
@@ -678,6 +691,7 @@ function bindCanvases() {
     });
     sceneResize.observe(scene);
     const update = (ev: PointerEvent) => {
+      if (careController?.isPlacing) return;
       const r = scene.getBoundingClientRect();
       pointer = {
         x: clampWorldX(ev.clientX - r.left, r.width),
@@ -687,6 +701,7 @@ function bindCanvases() {
     };
     scene.addEventListener("pointermove", update);
     scene.addEventListener("pointerdown", (ev) => {
+      if (careController?.isPlacing) return;
       update(ev);
       if (!follow) {
         setPetAction(state, "follow", pointer);
@@ -1114,28 +1129,25 @@ function updateGrowth() {
       ? `다음 성장까지 ${g.nextAt - project.growth.experience} XP`
       : "함께한 마음이 단짝이 되었어요";
 }
-function openFood() {
-  modal(
-    "오늘은 무엇을 나눠 먹을까요?",
-    `<p class="modal-intro">서로 다른 모양, 작은 기쁨. 친구가 직접 찾아와 먹으면 성장 기록이 쌓여요.</p><div class="food-picker">${FOOD_OPTIONS.map((f) => `<button data-food="${f.id}" class="food-option ${selectedFood === f.id ? "selected" : ""}"><span class="food-emoji">${f.icon}</span><strong>${f.name}</strong><span>${f.effect}</span><small>성장 +${f.xp} XP</small></button>`).join("")}</div><p class="inspector-help">현재까지 씨앗 ${project.growth.foodCounts.seeds}번 · 산딸기 ${project.growth.foodCounts.berry}번 · 당근 ${project.growth.foodCounts.carrot}번<br>돌보지 않는 동안 성장이나 기록이 줄어들지 않아요.</p>`,
-  );
-  document.querySelectorAll<HTMLButtonElement>("[data-food]").forEach((b) =>
-    b.addEventListener("click", () => {
-      selectedFood = b.dataset.food as FoodId;
-      food = {
-        ...placeResource(state.position, sceneWidth, sceneHeight, 70),
-        kind: selectedFood,
-      };
-      consumedFood = false;
-      setPetAction(state, "eat", food);
-      follow = false;
-      paused = false;
-      closeModal();
-      render();
-      toast(
-        `${FOOD_OPTIONS.find((f) => f.id === selectedFood)!.name} 냄새를 맡고 찾아가요`,
-      );
-    }),
+function placeCareItem(item: CareItem, point: Point) {
+  if (item === "water") {
+    water = { ...point };
+    consumedWater = false;
+    setPetAction(state, "drink", water);
+  } else {
+    selectedFood = item;
+    food = { ...point, kind: item };
+    consumedFood = false;
+    setPetAction(state, "eat", food);
+  }
+  follow = false;
+  paused = false;
+  render();
+  document
+    .querySelector<HTMLCanvasElement>("#scene")
+    ?.focus({ preventScroll: true });
+  toast(
+    `${item === "water" ? "물" : FOOD_OPTIONS.find((f) => f.id === item)!.name}를 놓았어요. 표시한 바닥 위치로 찾아가요`,
   );
 }
 let modalReturnFocus: HTMLElement | null = null;
@@ -1151,6 +1163,7 @@ function closeModal() {
   modalReturnFocus?.focus();
 }
 function modal(title: string, body: string, footer = "", wide = false) {
+  careController?.cancel(false);
   modalEpoch++;
   weatherController?.abort();
   weatherController = null;
@@ -1401,7 +1414,7 @@ function openSettings() {
 function openGuide() {
   modal(
     "작은숨과 친해지는 세 걸음",
-    `<div class="guide-step"><b>01</b><div><h3>먼저, 한 친구를 그려요</h3><p>이름과 탄생 계절을 정하고 선을 그려보세요. 예시 그림, 색상, 두께, 획 지우개, 실행 취소를 사용할 수 있어요.</p></div></div><div class="guide-step"><b>02</b><div><h3>다리를 잇고, 관절을 움직여요</h3><p>각 다리는 2~4개 관절을 갖는 순서 있는 사슬이에요. 4개 다리도 서로 다른 타이밍으로 걸어요. 그림 자체를 가중치 기반으로 변형하므로 숨겨진 다리는 추가되지 않아요.</p></div></div><div class="guide-step"><b>03</b><div><h3>자기만의 날씨 속에서, 함께해요</h3><p>먹이와 물을 찾아가고 쓰다듬기에 반응해요. 여섯 날씨와 낮·밤을 고르고 정원 사진을 저장할 수 있어요.</p></div></div><div class="honesty-note"><strong>움직임은 어떻게 만들어지나요?</strong><p>현재 버전은 절차적 행동 상태, 역기구학(IK), 가중치 기반 선 변형을 사용해요. 학습된 AI나 물리 시뮬레이션이 임의의 그림을 제어한다고 주장하지 않아요.</p></div>`,
+    `<div class="guide-step"><b>01</b><div><h3>먼저, 한 친구를 그려요</h3><p>이름과 탄생 계절을 정하고 선을 그려보세요. 예시 그림, 색상, 두께, 획 지우개, 실행 취소를 사용할 수 있어요.</p></div></div><div class="guide-step"><b>02</b><div><h3>다리를 잇고, 관절을 움직여요</h3><p>각 다리는 2~4개 관절을 갖는 순서 있는 사슬이에요. 4개 다리도 서로 다른 타이밍으로 걸어요. 그림 자체를 가중치 기반으로 변형하므로 숨겨진 다리는 추가되지 않아요.</p></div></div><div class="guide-step"><b>03</b><div><h3>자기만의 날씨 속에서, 함께해요</h3><p>옆의 돌봄 서랍을 열어 먹이와 물을 끌어 놓아보세요. 표시된 바닥 위치로 찾아와 먹고, 쓰다듬기에 반응해요. 여섯 날씨와 낮·밤을 고르고 정원 사진을 저장할 수 있어요.</p></div></div><div class="honesty-note"><strong>움직임은 어떻게 만들어지나요?</strong><p>현재 버전은 절차적 행동 상태, 역기구학(IK), 가중치 기반 선 변형을 사용해요. 학습된 AI나 물리 시뮬레이션이 임의의 그림을 제어한다고 주장하지 않아요.</p></div>`,
     button("", "알겠어요", "check", "primary"),
   );
   document
