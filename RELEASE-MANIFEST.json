@@ -1,0 +1,236 @@
+{
+  "project": "Little Breath",
+  "version": "1.0.0",
+  "files": [
+    {
+      "path": ".env.example",
+      "size": 376,
+      "sha256": "8c9043821ca334b5f7980899e303e5c018c98b901182d30f1227fb1b2e17eb8d"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "size": 657,
+      "sha256": "0383627c90295715ba5e90b3a6aac47a7bbd463f9898e378449c30cbbcf30bdb"
+    },
+    {
+      "path": ".github/workflows/pages.yml",
+      "size": 794,
+      "sha256": "555fec21cf3069383c9ecb0c20c95d45ebe73fcfcfabf34b03525c786d78ed95"
+    },
+    {
+      "path": ".gitignore",
+      "size": 492,
+      "sha256": "7d08b1ed70f75eb9a800cc59df1c0fc5e2a11b2be5c62ef04219d246e74730a9"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "size": 783,
+      "sha256": "bd9612a9c4a125bf9b04e6cfa140db40fea818118cff269f3cb2e886e4a9052f"
+    },
+    {
+      "path": "LICENSE",
+      "size": 1226,
+      "sha256": "32a4852f4403a4077834d445210943f2b96f730f6b0d7b7b6fc975cc020c8dbc"
+    },
+    {
+      "path": "README.md",
+      "size": 6785,
+      "sha256": "52fbb4291e8275522dd4ec79fe945a372f50926157070f400d9579a78ecd71f5"
+    },
+    {
+      "path": "SECURITY.md",
+      "size": 1257,
+      "sha256": "1e8cb2d5af5d069d440f41bbb4a2a377a5a4f08b14e24058112d67f181050840"
+    },
+    {
+      "path": "docs/THIRD_PARTY_NOTICES.md",
+      "size": 5363,
+      "sha256": "badc9fd62ec369fee0e2981d3ab9d1fbc21eb25e52a69cc3359eb65492e31744"
+    },
+    {
+      "path": "docs/architecture.md",
+      "size": 4090,
+      "sha256": "c4c013bb28566c75a617d2b2ff8809d204092ae597e51583729203ca74e982b0"
+    },
+    {
+      "path": "docs/release-review.md",
+      "size": 10498,
+      "sha256": "a8e50c1a232a0baaaaaea1f6eb12e4e545bbae44968beff6a2471b5b22dc4111"
+    },
+    {
+      "path": "docs/weather.md",
+      "size": 6335,
+      "sha256": "77b99c0bbcd84ad91995e8ed4333e821ecde01b45702c3c37aea29672188ee94"
+    },
+    {
+      "path": "index.html",
+      "size": 798,
+      "sha256": "351176ad28d5f738a2433079922da13a89dd25d3f412c16f65977e9aa7052376"
+    },
+    {
+      "path": "package-lock.json",
+      "size": 38635,
+      "sha256": "b7ea91d8bece87b998f439c830e8346ebce8f1f9815e8c8b92db8dd07caa9474"
+    },
+    {
+      "path": "package.json",
+      "size": 1112,
+      "sha256": "1bffab92863c212e38fc1a72c5253f76fa1a02b9f011bcd0c120806a1df9ce66"
+    },
+    {
+      "path": "playwright.config.ts",
+      "size": 732,
+      "sha256": "9bf0a8c8d44882a2bc02854e4b90110fa749c1a82c16c13a7f7933ad0ba31281"
+    },
+    {
+      "path": "public/favicon.svg",
+      "size": 470,
+      "sha256": "e629a6fe025099e7d9346caa9086ece89ba562601ff8072e63367192d156d153"
+    },
+    {
+      "path": "public/openweather.png",
+      "size": 21884,
+      "sha256": "78530eceb7385370ba7997ae66c08125e2d0cad102d172b2c5ae5e68c19e9a2b"
+    },
+    {
+      "path": "server/app.ts",
+      "size": 7757,
+      "sha256": "53827ac7023a142a9a272c8ce9a788b58c191020bda0de3b5f75ef1e8a2b8d2e"
+    },
+    {
+      "path": "server/index.ts",
+      "size": 1000,
+      "sha256": "ba491ad5409ba113ce20595d9d7cec20656109e07d94b3448e4dc1cb20479f45"
+    },
+    {
+      "path": "server/weather-service.ts",
+      "size": 8860,
+      "sha256": "e7babca591b4514709bab376ca00c65671b37e6503b2e11f31f1b85668ad4f10"
+    },
+    {
+      "path": "src/engine/behavior.ts",
+      "size": 7972,
+      "sha256": "d30a44a63d385cbce49303836e21195578897a225b4e2f3032c5c3add6744d8e"
+    },
+    {
+      "path": "src/engine/ik.ts",
+      "size": 3717,
+      "sha256": "a8685d7659b9132970a93ee1ac6bde1c4bbe18d1cb3d07542feee19bfdec5467"
+    },
+    {
+      "path": "src/engine/index.ts",
+      "size": 525,
+      "sha256": "37fe931ffa23e4d9988558a0bab1edb193638a43338ec9d47ad63a150c9cf41e"
+    },
+    {
+      "path": "src/engine/math.ts",
+      "size": 1733,
+      "sha256": "f8d2ca383ec4e54c28e2843c2d80d22c9604d6d84895983d35fd97fe40c8690f"
+    },
+    {
+      "path": "src/engine/pose.ts",
+      "size": 6519,
+      "sha256": "700544533347134f680f4b41a112342c8e4605bb7c3743d6ce7dd94953fa09ca"
+    },
+    {
+      "path": "src/engine/render.ts",
+      "size": 3432,
+      "sha256": "d62a081db4d9d753de64940ab4df7245d4251fd1987286d1ca5f9eb5bf8db95f"
+    },
+    {
+      "path": "src/engine/skinning.ts",
+      "size": 5138,
+      "sha256": "6931f5c023fc94f3db31f5b3bdad1cb0f2733506b97ecdd302f0fac567a37f3c"
+    },
+    {
+      "path": "src/engine/types.ts",
+      "size": 3011,
+      "sha256": "86d8fdbcde656c2608b4f9dff40a1ddffa291fb667872fd3d951faf301d2bd30"
+    },
+    {
+      "path": "src/growth.ts",
+      "size": 3589,
+      "sha256": "9f7c38d52a9118dc4affc7d1aeaf7b5d303b5f44df8373aec2e5f2be286c77f4"
+    },
+    {
+      "path": "src/icons.ts",
+      "size": 3274,
+      "sha256": "1df852b0f0774e02bf71034aa788909eb583bf06a7b3559f5ead3888bfcba1f1"
+    },
+    {
+      "path": "src/main.ts",
+      "size": 66713,
+      "sha256": "06c8b8bb9c266a3928ee8d937fcdb7d6db9849ef32fe37469c0520749bd4226f"
+    },
+    {
+      "path": "src/project.ts",
+      "size": 14572,
+      "sha256": "3572f92a6809d112b26bd62d97659a2532fdbb3a792780feb563fd3f5a7f398b"
+    },
+    {
+      "path": "src/scene.ts",
+      "size": 10506,
+      "sha256": "ad9ce379a4fb88508be42744c39a010cffd6152ed22ed02517ef5647e3597aad"
+    },
+    {
+      "path": "src/style.css",
+      "size": 42695,
+      "sha256": "f2a48bb3f7b7c73a332f30135de18e8dd9e01852776c0f1e5c27d4206217adfc"
+    },
+    {
+      "path": "src/tracing.ts",
+      "size": 2548,
+      "sha256": "090a1c1d3392b4e67be16edbdd491c1002f450d5f7d65ab3d888513d7cc81fed"
+    },
+    {
+      "path": "src/weather.ts",
+      "size": 9625,
+      "sha256": "97c9e1057215e4adb1b7e9a1e07ec94ee5b04c56f0399498ed1921ec17fa9807"
+    },
+    {
+      "path": "src/world.ts",
+      "size": 853,
+      "sha256": "5eb29dc60e1a98dda7de7360b9b3ef8f60aff994632950d088acd95ba507eaaa"
+    },
+    {
+      "path": "tests/browser/studio.spec.ts",
+      "size": 6978,
+      "sha256": "e7da40f6054bc3a2ffcf0c4feec4c414d3acb2533b3e1a8b62661008913330f5"
+    },
+    {
+      "path": "tests/engine.test.ts",
+      "size": 16094,
+      "sha256": "0919d8a20194b2888587fbaeb9adbc1c1afe67e2784026951098fd402a1510de"
+    },
+    {
+      "path": "tests/growth.test.ts",
+      "size": 5815,
+      "sha256": "5dad5ee9fa2ddcd4906137e4afa8b59edfd862d08695f64247f38f1f992e766c"
+    },
+    {
+      "path": "tests/user-regressions.test.ts",
+      "size": 29890,
+      "sha256": "0d1bfb11bcacf499ab3de57897a95e4ad560103630e97733a781adc18ade4ff4"
+    },
+    {
+      "path": "tests/weather.test.ts",
+      "size": 13598,
+      "sha256": "b9b205629d14e9b3673e77d4eb009cc000000c0830809df942b023f2fdce8bb3"
+    },
+    {
+      "path": "tsconfig.json",
+      "size": 324,
+      "sha256": "1f12ea1817515d1244e022744987d4a0910d2b19fac166d1f56c4232a40b6ff5"
+    },
+    {
+      "path": "tsconfig.server.json",
+      "size": 156,
+      "sha256": "3de470204469b6e4020365d3ff3b458b4db96ee6c32d0c112726794b9cd67254"
+    },
+    {
+      "path": "vite.config.ts",
+      "size": 213,
+      "sha256": "da62577456ccd6508e24170e586ca2cc0ad3aae05b6ada80606dc57ed286eb74"
+    }
+  ]
+}

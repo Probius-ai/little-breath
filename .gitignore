@@ -1,0 +1,34 @@
+# Local dependencies and generated builds
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Secrets: commit the documented placeholder file only
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local logs, browser recordings, and developer artifacts
+*.log
+playwright-report/
+test-results/
+.artifacts/
+.cache/
+.DS_Store
+Thumbs.db
+
+# Optional local research assets and private inputs (not part of this release)
+private/
+local-data/
+models/
+checkpoints/
+*.pkl
+*.pickle
+*.pt
+*.pth
+*.safetensors
