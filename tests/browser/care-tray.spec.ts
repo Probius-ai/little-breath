@@ -362,6 +362,14 @@ test("a second touch cannot steal or complete the primary food drag", async ({
     y: scene.y + scene.height * 0.6,
     id: 1,
   };
+  await page.evaluate(() => {
+    const target = window as unknown as { __careTouchUps: boolean[] };
+    target.__careTouchUps = [];
+    document.addEventListener("pointerup", (event) => {
+      if (event.pointerType === "touch")
+        target.__careTouchUps.push(event.isPrimary);
+    });
+  });
   const session = await page.context().newCDPSession(page);
   await session.send("Input.dispatchTouchEvent", {
     type: "touchStart",
@@ -378,14 +386,27 @@ test("a second touch cannot steal or complete the primary food drag", async ({
   const preview = await previewPoint(page);
   await session.send("Input.dispatchTouchEvent", {
     type: "touchEnd",
-    touchPoints: [landing],
+    // CDP lists the points being released, not the contacts remaining down.
+    // Chromium CreateWebTouchEvents erases each supplied touch-point ID.
+    // https://chromium.googlesource.com/chromium/src/+/refs/heads/main/content/browser/devtools/protocol/input_handler.cc
+    touchPoints: [second],
   });
+  expect(
+    await page.evaluate(
+      () => (window as unknown as { __careTouchUps: boolean[] }).__careTouchUps,
+    ),
+  ).toEqual([false]);
   expect(await renderedCare(page)).toEqual({});
   await expect(page.locator("#care-drop-preview")).toBeVisible();
   await session.send("Input.dispatchTouchEvent", {
     type: "touchEnd",
-    touchPoints: [],
+    touchPoints: [landing],
   });
+  expect(
+    await page.evaluate(
+      () => (window as unknown as { __careTouchUps: boolean[] }).__careTouchUps,
+    ),
+  ).toEqual([false, true]);
   await expectRendered(page, "food", preview);
   expect((await renderedCare(page)).water).toBeUndefined();
   await session.detach();
