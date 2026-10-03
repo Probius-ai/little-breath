@@ -34,8 +34,8 @@
     },
     {
       "path": "README.md",
-      "size": 6785,
-      "sha256": "52fbb4291e8275522dd4ec79fe945a372f50926157070f400d9579a78ecd71f5"
+      "size": 7212,
+      "sha256": "2e82556f9f31996e1b4baa8d675928eff580adc664a49cdb2957c5094408e14a"
     },
     {
       "path": "SECURITY.md",
@@ -49,13 +49,13 @@
     },
     {
       "path": "docs/architecture.md",
-      "size": 4090,
-      "sha256": "c4c013bb28566c75a617d2b2ff8809d204092ae597e51583729203ca74e982b0"
+      "size": 5352,
+      "sha256": "6e6eaee458703016655563715dbb2d0f9af1e3cff771b27416cc065ecb2ee30d"
     },
     {
       "path": "docs/release-review.md",
-      "size": 10498,
-      "sha256": "a8e50c1a232a0baaaaaea1f6eb12e4e545bbae44968beff6a2471b5b22dc4111"
+      "size": 11194,
+      "sha256": "02b416fa92688efecf6efa1e5a356f6378f98582111dced03295035c7fe222d5"
     },
     {
       "path": "docs/weather.md",
@@ -106,6 +106,16 @@
       "path": "server/weather-service.ts",
       "size": 8860,
       "sha256": "e7babca591b4514709bab376ca00c65671b37e6503b2e11f31f1b85668ad4f10"
+    },
+    {
+      "path": "src/care-placement.ts",
+      "size": 3482,
+      "sha256": "71698cb4d1e66d650d1be172a5bb33a4cae3e5f7df576d6405cacc79c4abb684"
+    },
+    {
+      "path": "src/care-tray.ts",
+      "size": 16101,
+      "sha256": "2d28abad640a6c3dece2b58062f806d644357d4359e41926e6aef14b033db51e"
     },
     {
       "path": "src/engine/behavior.ts",
@@ -159,8 +169,8 @@
     },
     {
       "path": "src/main.ts",
-      "size": 66713,
-      "sha256": "06c8b8bb9c266a3928ee8d937fcdb7d6db9849ef32fe37469c0520749bd4226f"
+      "size": 66764,
+      "sha256": "20d737ca1ffdf9ef4c52f64ddd1cc48a14cbca15d611524af2f5ec90ebfeb416"
     },
     {
       "path": "src/project.ts",
@@ -174,8 +184,8 @@
     },
     {
       "path": "src/style.css",
-      "size": 42695,
-      "sha256": "f2a48bb3f7b7c73a332f30135de18e8dd9e01852776c0f1e5c27d4206217adfc"
+      "size": 52186,
+      "sha256": "ab97093eaec77c0265e84557e331c04c680e50ea38357d52f82375ccbd691a2b"
     },
     {
       "path": "src/tracing.ts",
@@ -193,9 +203,19 @@
       "sha256": "5eb29dc60e1a98dda7de7360b9b3ef8f60aff994632950d088acd95ba507eaaa"
     },
     {
+      "path": "tests/browser/care-tray.spec.ts",
+      "size": 19145,
+      "sha256": "ed6a2594748848f587263fec2fc9f38f1c80928da282706134ee965706ef8792"
+    },
+    {
       "path": "tests/browser/studio.spec.ts",
-      "size": 7053,
-      "sha256": "75fa4d65b26f55bf70dfdb0dda8a7ba1de0f2a38a7600debcb59afb73f957409"
+      "size": 7245,
+      "sha256": "44c1e20415230765613dbdc26e6088a1acfb446f4e48e29aef2ca41800256f67"
+    },
+    {
+      "path": "tests/care-placement.test.ts",
+      "size": 10544,
+      "sha256": "349dd6466db68b94efc048cb2619949571db3ef5924103ac7e0ecf5582ed96eb"
     },
     {
       "path": "tests/engine.test.ts",
