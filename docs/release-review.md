@@ -73,3 +73,7 @@ Known limits and unfinished deployment checks:
 - [Vite runtime requirements](https://vite.dev/guide/)
 - [Vite deployment guidance](https://vite.dev/guide/static-deploy)
 - [GitHub's licensing guidance](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository)
+
+## Care tray update · 2026-10-03
+
+Added a collapsible side tray with food/water PointerEvent drag placement, exact ground-position preview, select-then-click and keyboard alternatives, pointer ownership, cancellation and resize handling. Durable version-one project fields and storage keys remain unchanged. Local verification: 100 unit/integration regressions plus frontend/backend typechecks and production build passed. Seventeen browser tests are now authored (the previous six plus eleven care-tray flows); the updated deployed-commit CI and manual browser outcome must be checked separately. No new provider, credential, authentication, database, or personal-data transmission was added.

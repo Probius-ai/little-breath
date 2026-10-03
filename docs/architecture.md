@@ -31,6 +31,14 @@ Static GitHub Pages hosts the full Mock app; it cannot execute the Node proxy. T
 
 Only a meal that has reached its target and entered consumption earns its food XP. Patting adds one XP with a three-second UI cooldown. Four permanent stages occur at 0, 20, 60, and 140 XP, changing rendered size. Counts are finite bounded integers. No idle-time penalties, purchases, or real-world health implications.
 
+## Care tray and placement
+
+The collapsible care tray is ephemeral UI. It contains seeds, berries, carrots, and water. Pointer capture keeps mouse, pen, and touch gestures attached to their initiating pointer. Other pointers cannot replace the active gesture. A shared pure `projectDrop` function maps both preview and final release to the same reachable horizontal ground point. Vertical coordinates are explicitly projected to the walkable ground; this is not free two-dimensional physics.
+
+A tap selects an item without placing anything. The user can then tap the garden, or focus it and use Left/Right, Home/End and Enter/Space. Escape, pointer cancellation, lost capture, off-scene release, drawer dismissal, resize, navigation, and page visibility loss cancel the pending placement. Nothing is rewarded on pointer-down, selection, drag, or cancellation. Existing consumption logic records care and XP only after the pet arrives and eats. Resource positions resize with the meadow.
+
+No durable project fields or storage keys change. Closing/reopening the tray does not reset the saved drawing, rig, name, care history, or growth. Placement previews and dropped consumables are temporary; saved progress remains the existing local-only version-one project.
+
 ## Tracing privacy
 
 The underlay accepts only local PNG/JPEG/WebP Files with matching binary signatures, rejects over 12 MB and decoded images above 20 million pixels or 8000 px on an edge, and draws at an adjustable opacity/scale/offset. The bitmap is never part of `Project`. Replacing/removing/leaving the workspace closes it; asynchronous loads use a generation check so outdated private images cannot reappear. The exported garden PNG contains the pet's authored ink, not the underlay.
