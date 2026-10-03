@@ -344,3 +344,29 @@ test("sync can be cancelled while cloud lookup is still pending", async ({
     page.getByRole("button", { name: "동기화 다시 켜기", exact: true }),
   ).toBeVisible();
 });
+
+test("storage quota failure cannot prevent logout and guest restoration", async ({
+  page,
+}) => {
+  const h = await setup(page);
+  await openAccount(page);
+  await consent(page);
+  await expect(page.locator(".cloud-status-line")).toContainText(
+    "클라우드에 저장됨",
+  );
+  await page.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key, value) {
+      if (key.startsWith("little-breath.account.v1."))
+        throw new DOMException("Synthetic test quota", "QuotaExceededError");
+      return original.call(this, key, value);
+    };
+  });
+  await page
+    .getByRole("button", { name: "로그아웃 · 게스트로 돌아가기" })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "GitHub로 로그인" }),
+  ).toBeVisible();
+  await expect(page.locator(".pet-identity h2")).toHaveText(h.guest.pet.name);
+});
