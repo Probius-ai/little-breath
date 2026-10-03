@@ -194,8 +194,8 @@
     },
     {
       "path": "tests/browser/studio.spec.ts",
-      "size": 6978,
-      "sha256": "e7da40f6054bc3a2ffcf0c4feec4c414d3acb2533b3e1a8b62661008913330f5"
+      "size": 7053,
+      "sha256": "75fa4d65b26f55bf70dfdb0dda8a7ba1de0f2a38a7600debcb59afb73f957409"
     },
     {
       "path": "tests/engine.test.ts",
